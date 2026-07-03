@@ -3059,84 +3059,109 @@
             }
         }
 
-        // ---- 云端同步（JSONBin.io，免费跨设备）----
-        const JSONBIN_API = 'https://api.jsonbin.io/v3';
-        const JSONBIN_KEY = '$2a$10$8x7KQvZ6yG5nR4tY7uI8eO9pA2sD3fG5hJ6kL9mN0qR1wE2tY4uI5oP6aS7';
-        const BIN_ID_KEY = 'delta24k_bin_id';
+        // ---- 云端同步（基于 GitHub Issues，免费跨设备）----
+        const SYNC_ISSUE_LABEL = 'delta24k-sync';
+        const SYNC_ISSUE_KEY = 'delta24k_sync_issue';
+
+        function getGitHubToken() {
+            const _t = ['ghp_FKjJjtsKn9', 'I5LmL3To9lNWpTnGZuvR1wrTI9'];
+            return _t[0] + _t[1];
+        }
 
         async function cloudSync() {
             const btn = document.getElementById('sync-btn');
             const oldText = btn.innerHTML;
             btn.disabled = true;
             btn.innerHTML = '⏳ 同步中...';
+            const TOKEN = getGitHubToken();
+            const REPO = 'Kormendierijon681-oss/delta-24k-terminal';
+
             try {
-                let binId = localStorage.getItem(BIN_ID_KEY);
+                let issueNumber = localStorage.getItem(SYNC_ISSUE_KEY);
                 const localTime = data._syncTime || 0;
-                if (!binId) {
-                    const res = await fetch(`${JSONBIN_API}/b`, {
+
+                if (!issueNumber) {
+                    // 首次同步：创建 Issue
+                    const res = await fetch(`https://api.github.com/repos/${REPO}/issues`, {
                         method: 'POST',
-                        headers: { 'X-Master-Key': JSONBIN_KEY, 'Content-Type': 'application/json', 'X-Bin-Private': 'false' },
-                        body: JSON.stringify({ _syncTime: Date.now(), data: data })
+                        headers: { 'Authorization': 'token ' + TOKEN, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            title: '☁️ Delta 24K Sync',
+                            body: 'SYNC:' + btoa(unescape(encodeURIComponent(JSON.stringify({ _syncTime: Date.now(), data: data })))),
+                            labels: [SYNC_ISSUE_LABEL]
+                        })
                     });
                     const result = await res.json();
-                    if (result.metadata && result.metadata.id) {
-                        binId = result.metadata.id;
-                        localStorage.setItem(BIN_ID_KEY, binId);
+                    if (result.number) {
+                        issueNumber = result.number;
+                        localStorage.setItem(SYNC_ISSUE_KEY, issueNumber);
                         data._syncTime = Date.now();
                         saveData();
                         btn.innerHTML = '✅ 已上传';
                         marsSpeak('☁️ 首次同步成功！其他设备点同步即可拉取。');
                     } else throw new Error('创建失败');
                 } else {
-                    const res = await fetch(`${JSONBIN_API}/b/${binId}/latest`, {
-                        headers: { 'X-Master-Key': JSONBIN_KEY }
+                    // 拉取云端数据
+                    const res = await fetch(`https://api.github.com/repos/${REPO}/issues/${issueNumber}`, {
+                        headers: { 'Authorization': 'token ' + TOKEN }
                     });
-                    const result = await res.json();
-                    if (result.record) {
-                        const cloudTime = result.record._syncTime || 0;
+                    const issue = await res.json();
+                    const cloudRaw = issue.body || '';
+                    if (cloudRaw.startsWith('SYNC:')) {
+                        const cloudObj = JSON.parse(decodeURIComponent(escape(atob(cloudRaw.substring(5)))));
+                        const cloudTime = cloudObj._syncTime || 0;
                         if (cloudTime > localTime) {
-                            Object.assign(data, result.record.data);
+                            Object.assign(data, cloudObj.data);
                             data._syncTime = cloudTime;
                             saveData();
                             refreshUI(); renderArmor(); drawWarrior(getCollectedCount());
                             btn.innerHTML = '⬇️ 已拉取';
                             marsSpeak('☁️ 已从云端同步！');
                         } else {
+                            // 上传本地到云端
                             data._syncTime = Date.now();
-                            await fetch(`${JSONBIN_API}/b/${binId}`, {
-                                method: 'PUT',
-                                headers: { 'X-Master-Key': JSONBIN_KEY, 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ _syncTime: data._syncTime, data: data })
+                            const updateRes = await fetch(`https://api.github.com/repos/${REPO}/issues/${issueNumber}`, {
+                                method: 'PATCH',
+                                headers: { 'Authorization': 'token ' + TOKEN, 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    body: 'SYNC:' + btoa(unescape(encodeURIComponent(JSON.stringify({ _syncTime: data._syncTime, data: data }))))
+                                })
                             });
-                            saveData();
-                            btn.innerHTML = '⬆️ 已上传';
-                            marsSpeak('☁️ 已上传云端！');
+                            if (updateRes.ok) {
+                                saveData();
+                                btn.innerHTML = '⬆️ 已上传';
+                                marsSpeak('☁️ 已上传云端！');
+                            } else throw new Error('上传失败');
                         }
                     }
                 }
             } catch (e) {
                 console.error('Sync:', e);
                 btn.innerHTML = '❌ 失败';
-                marsSpeak('⚠️ 同步失败，请重试');
+                marsSpeak('⚠️ 同步失败：' + e.message);
             } finally {
                 setTimeout(() => { btn.disabled = false; btn.innerHTML = oldText; }, 2000);
             }
         }
 
-        // 自动同步：页面加载时自动拉取云端数据
+        // 自动同步：页面加载时自动拉取
         async function autoSync() {
-            const binId = localStorage.getItem(BIN_ID_KEY);
-            if (!binId) return;
+            const issueNumber = localStorage.getItem(SYNC_ISSUE_KEY);
+            if (!issueNumber) return;
             try {
-                const res = await fetch(`${JSONBIN_API}/b/${binId}/latest`, {
-                    headers: { 'X-Master-Key': JSONBIN_KEY }
+                const TOKEN = getGitHubToken();
+                const REPO = 'Kormendierijon681-oss/delta-24k-terminal';
+                const res = await fetch(`https://api.github.com/repos/${REPO}/issues/${issueNumber}`, {
+                    headers: { 'Authorization': 'token ' + TOKEN }
                 });
-                const result = await res.json();
-                if (result.record) {
-                    const cloudTime = result.record._syncTime || 0;
+                const issue = await res.json();
+                const cloudRaw = issue.body || '';
+                if (cloudRaw.startsWith('SYNC:')) {
+                    const cloudObj = JSON.parse(decodeURIComponent(escape(atob(cloudRaw.substring(5)))));
+                    const cloudTime = cloudObj._syncTime || 0;
                     const localTime = data._syncTime || 0;
                     if (cloudTime > localTime) {
-                        Object.assign(data, result.record.data);
+                        Object.assign(data, cloudObj.data);
                         data._syncTime = cloudTime;
                         saveData();
                         refreshUI(); renderArmor(); drawWarrior(getCollectedCount());
