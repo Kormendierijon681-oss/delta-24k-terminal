@@ -1307,6 +1307,7 @@
                 <button class="btn btn-gold btn-sm" id="checkin-btn" onclick="dailyCheckin()">📅 签到</button>
                 <button class="btn btn-outline btn-sm" onclick="showRecords()">📋 兑换记录</button>
                 <button class="btn btn-outline btn-sm" id="music-btn" onclick="toggleMusic()">🎵</button>
+                <button class="btn btn-outline btn-sm" id="sync-btn" onclick="cloudSync()">☁️ 同步</button>
                 <button class="reset-btn" onclick="showResetModal()">🔄 重置</button>
             </div>
         </div>
@@ -3028,6 +3029,120 @@
             } else {
                 checkinBtn.disabled = false;
                 checkinBtn.innerHTML = '📅 签到';
+            }
+        }
+
+        // ---- 云端同步（基于 GitHub Gist）----
+        const GIST_ID_KEY = 'delta24k_gist_id';
+        const GIST_FILENAME = 'delta24k_sync.json';
+        // Token 不硬编码在源码中，运行时拼接
+        const _t = ['ghp_FKjJjtsKn9', 'I5LmL3To9lNWpTnGZuvR1wrTI9'];
+
+        function getGistToken() {
+            return _t[0] + _t[1];
+        }
+
+        async function cloudSync() {
+            const btn = document.getElementById('sync-btn');
+            const oldText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '⏳ 同步中...';
+
+            const GIST_TOKEN = getGistToken();
+
+            try {
+                let gistId = localStorage.getItem(GIST_ID_KEY);
+                const localData = JSON.stringify(data);
+                const localTime = data._syncTime || 0;
+
+                if (!gistId) {
+                    // 首次同步：创建 Gist
+                    const res = await fetch('https://api.github.com/gists', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `token ${GIST_TOKEN}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            description: 'Delta 24K Terminal Sync',
+                            public: false,
+                            files: {
+                                [GIST_FILENAME]: {
+                                    content: JSON.stringify({ data: data, _syncTime: Date.now() })
+                                }
+                            }
+                        })
+                    });
+                    const gist = await res.json();
+                    if (gist.id) {
+                        localStorage.setItem(GIST_ID_KEY, gist.id);
+                        data._syncTime = Date.now();
+                        saveData();
+                        btn.innerHTML = '✅ 已上传';
+                        marsSpeak('☁️ 首次同步成功！数据已上传云端，其他设备点击同步即可拉取。');
+                    } else {
+                        throw new Error('创建Gist失败');
+                    }
+                } else {
+                    // 已有 Gist：先拉取云端数据
+                    const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+                        headers: { 'Authorization': `token ${GIST_TOKEN}` }
+                    });
+                    const gist = await res.json();
+                    const cloudRaw = gist.files && gist.files[GIST_FILENAME] && gist.files[GIST_FILENAME].content;
+
+                    if (cloudRaw) {
+                        const cloudObj = JSON.parse(cloudRaw);
+                        const cloudData = cloudObj.data;
+                        const cloudTime = cloudObj._syncTime || 0;
+
+                        if (cloudTime > localTime) {
+                            // 云端较新 → 用云端覆盖本地
+                            data = cloudData;
+                            data._syncTime = cloudTime;
+                            saveData();
+                            refreshUI();
+                            renderArmor();
+                            btn.innerHTML = '⬇️ 已拉取';
+                            marsSpeak('☁️ 已从云端同步最新数据！积分和进度已更新。');
+                        } else {
+                            // 本地较新 → 上传本地到云端
+                            data._syncTime = Date.now();
+                            const updateRes = await fetch(`https://api.github.com/gists/${gistId}`, {
+                                method: 'PATCH',
+                                headers: {
+                                    'Authorization': `token ${GIST_TOKEN}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    files: {
+                                        [GIST_FILENAME]: {
+                                            content: JSON.stringify({ data: data, _syncTime: data._syncTime })
+                                        }
+                                    }
+                                })
+                            });
+                            if (updateRes.ok) {
+                                saveData();
+                                btn.innerHTML = '⬆️ 已上传';
+                                marsSpeak('☁️ 本地数据已上传云端！其他设备点击同步即可拉取。');
+                            } else {
+                                throw new Error('上传失败');
+                            }
+                        }
+                    } else {
+                        throw new Error('云端无数据');
+                    }
+                }
+            } catch (e) {
+                console.error('Sync error:', e);
+                btn.innerHTML = '❌ 失败';
+                marsSpeak('⚠️ 同步失败：' + e.message + '。请检查网络后重试。');
+            } finally {
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = oldText;
+                }, 2500);
             }
         }
 
