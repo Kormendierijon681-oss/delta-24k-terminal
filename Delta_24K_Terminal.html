@@ -915,7 +915,7 @@
             border-radius: 12px;
             display: block;
             box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
             position: relative;
             z-index: 2;
         }
@@ -1379,7 +1379,7 @@
                 </div>
                 <div class="warrior-img-container">
                     <div class="warrior-aura" id="warrior-aura"></div>
-                    <img class="warrior-img" id="warrior-img" src="warrior_saint.png" alt="圣斗士·李隆基">
+                    <img class="warrior-img" id="warrior-img" src="saint_0.png" alt="圣斗士·李隆基">
                     <img class="schnauzer-companion" id="schnauzer-dog" src="schnauzer_dog.png" alt="雪纳瑞" style="display:none;">
                 </div>
             </div>
@@ -1874,6 +1874,22 @@
             if (!img) return;
             const total = ARMOR_ITEMS.length;
             const percent = collected / total;
+
+            // 根据收集进度切换李隆基形象
+            // 0件=素衣 | 1-3件=青铜靴 | 4-6件=银甲 | 7-9件=金甲圣斗士 | 10-12件=终极形态
+            let stage = 0;
+            if (collected >= 10) stage = 4;
+            else if (collected >= 7) stage = 3;
+            else if (collected >= 4) stage = 2;
+            else if (collected >= 1) stage = 1;
+            const newSrc = `saint_${stage}.png`;
+            if (img.getAttribute('src') !== newSrc) {
+                img.style.opacity = '0';
+                setTimeout(() => {
+                    img.src = newSrc;
+                    img.style.opacity = '1';
+                }, 300);
+            }
 
             // 图片亮度/对比度随进度提升
             img.style.filter = `brightness(${1 + percent * 0.2}) contrast(${1 + percent * 0.15}) saturate(${1 + percent * 0.3})`;
