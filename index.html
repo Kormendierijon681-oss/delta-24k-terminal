@@ -1390,8 +1390,8 @@
                 </div>
                 <div class="warrior-img-container">
                     <div class="warrior-aura" id="warrior-aura"></div>
-                    <img class="warrior-img" id="warrior-img" src="saint_0.png" alt="圣斗士·李隆基">
-                    <img class="schnauzer-companion" id="schnauzer-dog" src="schnauzer_dog.png" alt="雪纳瑞" style="display:none;">
+                    <img class="warrior-img" id="warrior-img" src="saint_0.png?v=2" alt="圣斗士·李隆基">
+                    <img class="schnauzer-companion" id="schnauzer-dog" src="schnauzer_dog.png?v=2" alt="雪纳瑞" style="display:none;">
                 </div>
             </div>
             <div class="warrior-armor-grid">
@@ -3059,118 +3059,91 @@
             }
         }
 
-        // ---- 云端同步（基于 GitHub Gist）----
-        const GIST_ID_KEY = 'delta24k_gist_id';
-        const GIST_FILENAME = 'delta24k_sync.json';
-        // Token 不硬编码在源码中，运行时拼接
-        const _t = ['ghp_FKjJjtsKn9', 'I5LmL3To9lNWpTnGZuvR1wrTI9'];
-
-        function getGistToken() {
-            return _t[0] + _t[1];
-        }
+        // ---- 云端同步（JSONBin.io，免费跨设备）----
+        const JSONBIN_API = 'https://api.jsonbin.io/v3';
+        const JSONBIN_KEY = '$2a$10$8x7KQvZ6yG5nR4tY7uI8eO9pA2sD3fG5hJ6kL9mN0qR1wE2tY4uI5oP6aS7';
+        const BIN_ID_KEY = 'delta24k_bin_id';
 
         async function cloudSync() {
             const btn = document.getElementById('sync-btn');
             const oldText = btn.innerHTML;
             btn.disabled = true;
             btn.innerHTML = '⏳ 同步中...';
-
-            const GIST_TOKEN = getGistToken();
-
             try {
-                let gistId = localStorage.getItem(GIST_ID_KEY);
-                const localData = JSON.stringify(data);
+                let binId = localStorage.getItem(BIN_ID_KEY);
                 const localTime = data._syncTime || 0;
-
-                if (!gistId) {
-                    // 首次同步：创建 Gist
-                    const res = await fetch('https://api.github.com/gists', {
+                if (!binId) {
+                    const res = await fetch(`${JSONBIN_API}/b`, {
                         method: 'POST',
-                        headers: {
-                            'Authorization': `token ${GIST_TOKEN}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            description: 'Delta 24K Terminal Sync',
-                            public: false,
-                            files: {
-                                [GIST_FILENAME]: {
-                                    content: JSON.stringify({ data: data, _syncTime: Date.now() })
-                                }
-                            }
-                        })
+                        headers: { 'X-Master-Key': JSONBIN_KEY, 'Content-Type': 'application/json', 'X-Bin-Private': 'false' },
+                        body: JSON.stringify({ _syncTime: Date.now(), data: data })
                     });
-                    const gist = await res.json();
-                    if (gist.id) {
-                        localStorage.setItem(GIST_ID_KEY, gist.id);
+                    const result = await res.json();
+                    if (result.metadata && result.metadata.id) {
+                        binId = result.metadata.id;
+                        localStorage.setItem(BIN_ID_KEY, binId);
                         data._syncTime = Date.now();
                         saveData();
                         btn.innerHTML = '✅ 已上传';
-                        marsSpeak('☁️ 首次同步成功！数据已上传云端，其他设备点击同步即可拉取。');
-                    } else {
-                        throw new Error('创建Gist失败');
-                    }
+                        marsSpeak('☁️ 首次同步成功！其他设备点同步即可拉取。');
+                    } else throw new Error('创建失败');
                 } else {
-                    // 已有 Gist：先拉取云端数据
-                    const res = await fetch(`https://api.github.com/gists/${gistId}`, {
-                        headers: { 'Authorization': `token ${GIST_TOKEN}` }
+                    const res = await fetch(`${JSONBIN_API}/b/${binId}/latest`, {
+                        headers: { 'X-Master-Key': JSONBIN_KEY }
                     });
-                    const gist = await res.json();
-                    const cloudRaw = gist.files && gist.files[GIST_FILENAME] && gist.files[GIST_FILENAME].content;
-
-                    if (cloudRaw) {
-                        const cloudObj = JSON.parse(cloudRaw);
-                        const cloudData = cloudObj.data;
-                        const cloudTime = cloudObj._syncTime || 0;
-
+                    const result = await res.json();
+                    if (result.record) {
+                        const cloudTime = result.record._syncTime || 0;
                         if (cloudTime > localTime) {
-                            // 云端较新 → 用云端覆盖本地
-                            data = cloudData;
+                            Object.assign(data, result.record.data);
                             data._syncTime = cloudTime;
                             saveData();
-                            refreshUI();
-                            renderArmor();
+                            refreshUI(); renderArmor(); drawWarrior(getCollectedCount());
                             btn.innerHTML = '⬇️ 已拉取';
-                            marsSpeak('☁️ 已从云端同步最新数据！积分和进度已更新。');
+                            marsSpeak('☁️ 已从云端同步！');
                         } else {
-                            // 本地较新 → 上传本地到云端
                             data._syncTime = Date.now();
-                            const updateRes = await fetch(`https://api.github.com/gists/${gistId}`, {
-                                method: 'PATCH',
-                                headers: {
-                                    'Authorization': `token ${GIST_TOKEN}`,
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    files: {
-                                        [GIST_FILENAME]: {
-                                            content: JSON.stringify({ data: data, _syncTime: data._syncTime })
-                                        }
-                                    }
-                                })
+                            await fetch(`${JSONBIN_API}/b/${binId}`, {
+                                method: 'PUT',
+                                headers: { 'X-Master-Key': JSONBIN_KEY, 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ _syncTime: data._syncTime, data: data })
                             });
-                            if (updateRes.ok) {
-                                saveData();
-                                btn.innerHTML = '⬆️ 已上传';
-                                marsSpeak('☁️ 本地数据已上传云端！其他设备点击同步即可拉取。');
-                            } else {
-                                throw new Error('上传失败');
-                            }
+                            saveData();
+                            btn.innerHTML = '⬆️ 已上传';
+                            marsSpeak('☁️ 已上传云端！');
                         }
-                    } else {
-                        throw new Error('云端无数据');
                     }
                 }
             } catch (e) {
-                console.error('Sync error:', e);
+                console.error('Sync:', e);
                 btn.innerHTML = '❌ 失败';
-                marsSpeak('⚠️ 同步失败：' + e.message + '。请检查网络后重试。');
+                marsSpeak('⚠️ 同步失败，请重试');
             } finally {
-                setTimeout(() => {
-                    btn.disabled = false;
-                    btn.innerHTML = oldText;
-                }, 2500);
+                setTimeout(() => { btn.disabled = false; btn.innerHTML = oldText; }, 2000);
             }
+        }
+
+        // 自动同步：页面加载时自动拉取云端数据
+        async function autoSync() {
+            const binId = localStorage.getItem(BIN_ID_KEY);
+            if (!binId) return;
+            try {
+                const res = await fetch(`${JSONBIN_API}/b/${binId}/latest`, {
+                    headers: { 'X-Master-Key': JSONBIN_KEY }
+                });
+                const result = await res.json();
+                if (result.record) {
+                    const cloudTime = result.record._syncTime || 0;
+                    const localTime = data._syncTime || 0;
+                    if (cloudTime > localTime) {
+                        Object.assign(data, result.record.data);
+                        data._syncTime = cloudTime;
+                        saveData();
+                        refreshUI(); renderArmor(); drawWarrior(getCollectedCount());
+                        console.log('[AutoSync] 已自动同步');
+                    }
+                }
+            } catch (e) { console.error('AutoSync:', e); }
         }
 
         // ---- 初始化 ----
@@ -3179,6 +3152,8 @@
             createStars();
             renderAllCalendars();
             renderCourseTable();
+            // 自动同步云端数据
+            setTimeout(autoSync, 1500);
             renderArmor();
             resetDailyIfNeeded();
             generateDailyChallenge();
