@@ -1,0 +1,3060 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+        <title>Delta Force · 暑期作战终端 | 李童心</title>
+        <!-- Google Fonts: 酷炫字体 -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Cinzel:wght@700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --green: #00ff41;
+            --gold: #ffd700;
+            --red: #ff4444;
+            --blue: #00b4ff;
+            --purple: #b44dff;
+            --bg: #0a0a0f;
+            --panel: #14141f;
+            --card: #1e1e2e;
+            --border: #2a2a3a;
+            --text: #c8c8d4;
+            --text-dim: #6c6c80;
+            --shadow-gold: 0 0 20px rgba(255, 215, 0, 0.15);
+            --shadow-green: 0 0 15px rgba(0, 255, 65, 0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ========== 星空背景 ========== */
+        .stars-bg {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .star {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            animation: twinkle var(--dur) ease-in-out infinite;
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* ========== 容器 ========== */
+        .app-container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 12px 16px;
+        }
+
+        /* ========== 顶部导航栏 ========== */
+        .top-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .nav-brand .logo {
+            font-size: 1.6rem;
+            animation: pulse-gold 2s ease-in-out infinite;
+        }
+        @keyframes pulse-gold {
+            0%, 100% { filter: drop-shadow(0 0 4px var(--gold)); }
+            50% { filter: drop-shadow(0 0 12px var(--gold)); }
+        }
+        .nav-brand h1 {
+            font-size: 1.2rem;
+            background: linear-gradient(135deg, var(--gold), #ffaa00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 900;
+            letter-spacing: 2px;
+        }
+        .nav-brand .subtitle {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+        }
+        .nav-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        /* ========== 状态卡片行 ========== */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .stat-card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s;
+            cursor: default;
+        }
+        .stat-card:hover {
+            border-color: var(--gold);
+            box-shadow: var(--shadow-gold);
+            transform: translateY(-2px);
+        }
+        .stat-icon {
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+        .stat-info { min-width: 0; }
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: var(--gold);
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+        .stat-value.green { color: var(--green); text-shadow: 0 0 10px rgba(0, 255, 65, 0.3); }
+        .stat-value.blue { color: var(--blue); text-shadow: 0 0 10px rgba(0, 180, 255, 0.3); }
+        .stat-value.purple { color: var(--purple); text-shadow: 0 0 10px rgba(180, 77, 255, 0.3); }
+
+        /* ========== 军衔进度 ========== */
+        .rank-section {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 12px;
+        }
+        .rank-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .rank-current {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .rank-current .icon { font-size: 1.8rem; }
+        .rank-current .name { font-size: 1.1rem; font-weight: 900; color: var(--gold); }
+        .rank-next { font-size: 0.8rem; color: var(--text-dim); }
+        .rank-bar-wrap {
+            height: 10px;
+            background: #1a1a2e;
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+        .rank-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffd700, #ff8c00, #ff4444);
+            border-radius: 5px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        .rank-bar-fill::after {
+            content: '';
+            position: absolute;
+            right: 0; top: 0;
+            width: 20px; height: 100%;
+            background: rgba(255,255,255,0.3);
+            border-radius: 5px;
+        }
+        .rank-milestones {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 6px;
+            font-size: 0.65rem;
+            color: var(--text-dim);
+        }
+
+        /* ========== 主布局 ========== */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        /* ========== 面板 ========== */
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        .panel-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0,0,0,0.2);
+        }
+        .panel-header h3 {
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .panel-body {
+            padding: 12px;
+            max-height: 380px;
+            overflow-y: auto;
+        }
+        .panel-body::-webkit-scrollbar { width: 4px; }
+        .panel-body::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 2px;
+        }
+
+        /* ========== 任务列表 ========== */
+        .task-list { display: flex; flex-direction: column; gap: 6px; }
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            cursor: pointer;
+            transition: all 0.25s;
+            position: relative;
+            overflow: hidden;
+        }
+        .task-item:hover {
+            border-color: var(--green);
+            box-shadow: var(--shadow-green);
+        }
+        .task-item.completed {
+            opacity: 0.5;
+            cursor: default;
+            border-color: #333;
+        }
+        .task-item.completed:hover {
+            border-color: #333;
+            box-shadow: none;
+        }
+        .task-check {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.3s;
+        }
+        .task-item:not(.completed):hover .task-check {
+            border-color: var(--green);
+            background: rgba(0,255,65,0.1);
+        }
+        .task-item.completed .task-check {
+            border-color: var(--green);
+            background: var(--green);
+            color: #000;
+        }
+        .task-info { flex: 1; min-width: 0; }
+        .task-name { font-size: 0.85rem; font-weight: 600; }
+        .task-desc { font-size: 0.7rem; color: var(--text-dim); margin-top: 2px; }
+        .task-reward {
+            font-size: 0.85rem;
+            font-weight: 900;
+            color: var(--gold);
+            flex-shrink: 0;
+        }
+        .task-category {
+            font-size: 0.6rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: rgba(0,255,65,0.1);
+            color: var(--green);
+            flex-shrink: 0;
+        }
+        .task-category.math { background: rgba(255,68,68,0.1); color: var(--red); }
+        .task-category.chn { background: rgba(0,180,255,0.1); color: var(--blue); }
+        .task-category.sport { background: rgba(255,170,0,0.1); color: #ffaa00; }
+        .task-category.art { background: rgba(180,77,255,0.1); color: var(--purple); }
+
+        /* 任务完成涟漪 */
+        .task-ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(0,255,65,0.3);
+            transform: scale(0);
+            animation: ripple 0.6s ease-out forwards;
+            pointer-events: none;
+        }
+        @keyframes ripple {
+            to { transform: scale(4); opacity: 0; }
+        }
+
+        /* ========== 每日挑战 ========== */
+        .challenge-card {
+            background: linear-gradient(135deg, #1a1a2e, #2a1a3e);
+            border: 1px solid var(--purple);
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        .challenge-card::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: conic-gradient(transparent, rgba(180,77,255,0.1), transparent, rgba(255,215,0,0.1), transparent);
+            animation: rotate-border 4s linear infinite;
+        }
+        @keyframes rotate-border {
+            to { transform: rotate(360deg); }
+        }
+        .challenge-inner {
+            position: relative;
+            z-index: 1;
+        }
+        .challenge-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .challenge-header h4 { color: var(--purple); font-size: 0.85rem; }
+        .challenge-reward {
+            font-size: 0.9rem;
+            font-weight: 900;
+            color: var(--gold);
+        }
+        .challenge-progress {
+            height: 6px;
+            background: #2a2a3e;
+            border-radius: 3px;
+            margin: 8px 0;
+            overflow: hidden;
+        }
+        .challenge-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--purple), var(--gold));
+            border-radius: 3px;
+            transition: width 0.5s;
+        }
+
+        /* ========== 商店 ========== */
+        .shop-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 8px;
+        }
+        .shop-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: default;
+        }
+        .shop-card.affordable {
+            border-color: var(--gold);
+            cursor: pointer;
+            animation: shimmer 2s ease-in-out infinite;
+        }
+        @keyframes shimmer {
+            0%, 100% { box-shadow: 0 0 5px rgba(255,215,0,0.1); }
+            50% { box-shadow: 0 0 15px rgba(255,215,0,0.3); }
+        }
+        .shop-card.affordable:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255,215,0,0.2);
+        }
+        .shop-icon { font-size: 2rem; margin-bottom: 6px; }
+        .shop-name { font-size: 0.8rem; font-weight: 600; }
+        .shop-cost { font-size: 0.75rem; color: var(--gold); margin: 4px 0; }
+        .shop-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            padding: 5px 16px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.75rem;
+            transition: all 0.3s;
+        }
+        .shop-card.affordable .shop-btn {
+            border-color: var(--gold);
+            color: var(--gold);
+            background: rgba(255,215,0,0.1);
+        }
+        .shop-card.affordable .shop-btn:hover {
+            background: var(--gold);
+            color: #000;
+        }
+
+        /* ========== 聊天终端 ========== */
+        .chat-panel {
+            display: flex;
+            flex-direction: column;
+            height: 320px;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 12px;
+            overflow-y: auto;
+            font-size: 0.8rem;
+            line-height: 1.6;
+            background: #0a0a14;
+        }
+        .chat-messages::-webkit-scrollbar { width: 4px; }
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 2px;
+        }
+        .chat-msg { margin-bottom: 8px; animation: fadeInUp 0.3s ease-out; }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .chat-msg.mars .sender { color: var(--gold); }
+        .chat-msg.user .sender { color: var(--green); }
+        .chat-msg .time { font-size: 0.6rem; color: var(--text-dim); margin-left: 8px; }
+        .chat-input-wrap {
+            display: flex;
+            padding: 10px;
+            background: var(--card);
+            border-top: 1px solid var(--border);
+            gap: 8px;
+        }
+        .chat-input {
+            flex: 1;
+            background: #0a0a14;
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 10px 14px;
+            border-radius: 20px;
+            font-family: inherit;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+        }
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 10px rgba(255,215,0,0.1);
+        }
+        .chat-send {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            background: var(--gold);
+            border: none;
+            color: #000;
+            font-size: 1.1rem;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.3s;
+        }
+        .chat-send:hover { transform: scale(1.1); }
+
+        /* ========== 成就墙 ========== */
+        .badges-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
+            gap: 8px;
+        }
+        .badge-item {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 4px;
+            text-align: center;
+            opacity: 0.35;
+            filter: grayscale(100%);
+            transition: all 0.4s;
+            cursor: default;
+        }
+        .badge-item.unlocked {
+            opacity: 1;
+            filter: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 12px rgba(255,215,0,0.2);
+        }
+        .badge-item .b-icon { font-size: 1.6rem; display: block; }
+        .badge-item .b-name { font-size: 0.6rem; margin-top: 4px; color: var(--text-dim); }
+        .badge-item.unlocked .b-name { color: var(--gold); }
+
+        /* ========== 暑期日历 ========== */
+        .calendar-panel { margin-bottom: 12px; }
+        .cal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 16px;
+        }
+        .cal-nav-btn {
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 4px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+        }
+        .cal-nav-btn:hover { border-color: var(--gold); color: var(--gold); }
+        .cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            padding: 0 12px 12px;
+        }
+        .cal-day-header {
+            text-align: center;
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            padding: 6px 0;
+        }
+        .cal-day-header.weekend { color: var(--red); }
+        .cal-day {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            cursor: default;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .cal-day:hover { background: rgba(255,215,0,0.05); }
+        .cal-day.today {
+            border: 2px solid var(--gold);
+            font-weight: 900;
+            color: var(--gold);
+        }
+        .cal-day.has-activity::after {
+            content: '';
+            width: 5px; height: 5px;
+            background: var(--green);
+            border-radius: 50%;
+            position: absolute;
+            bottom: 4px;
+        }
+        .cal-day.has-checkin::after {
+            background: var(--gold);
+        }
+        .cal-day.other-month { color: var(--text-dim); opacity: 0.3; }
+        .cal-day-label {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            font-weight: 700;
+        }
+        .cal-day.has-activity .cal-day-label {
+            color: var(--gold);
+            font-size: 1rem;
+            text-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+        }
+        .cal-day .course-name {
+            font-size: 0.85rem;
+            font-weight: 900;
+            line-height: 1.1;
+            text-align: center;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .cal-day .course-name.eng {
+            font-family: 'Orbitron', 'Impact', 'Arial Black', sans-serif;
+            color: #00b4ff;
+            text-shadow: 0 0 6px rgba(0, 180, 255, 0.6), 0 0 12px rgba(0, 180, 255, 0.3);
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+        }
+        .cal-day .course-name.math {
+            font-family: 'Share Tech Mono', 'Courier New', monospace;
+            color: #00ff41;
+            text-shadow: 0 0 6px rgba(0, 255, 65, 0.6), 0 0 12px rgba(0, 255, 65, 0.3);
+            font-size: 0.95rem;
+        }
+        .cal-day .course-name.chn {
+            font-family: 'Cinzel', 'Georgia', 'STSong', serif;
+            color: #ffaa00;
+            text-shadow: 0 0 6px rgba(255, 170, 0, 0.6), 0 0 12px rgba(255, 170, 0, 0.3);
+            font-size: 1rem;
+        }
+        .cal-day .course-time {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            line-height: 1.1;
+            text-align: center;
+            margin-top: 2px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        /* ========== 弹窗 ========== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+        .modal-overlay.show { display: flex; }
+        .modal-dialog {
+            background: var(--panel);
+            border: 2px solid var(--gold);
+            border-radius: 16px;
+            padding: 28px;
+            text-align: center;
+            max-width: 380px;
+            width: 90%;
+            box-shadow: 0 0 40px rgba(255,215,0,0.2);
+            animation: modalIn 0.3s ease-out;
+        }
+        @keyframes modalIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .modal-dialog h2 { color: var(--gold); margin-bottom: 8px; }
+        .modal-bonus { font-size: 2.5rem; color: var(--green); margin: 16px 0; text-shadow: 0 0 20px rgba(0,255,65,0.4); }
+        .modal-btn {
+            background: var(--gold);
+            color: #000;
+            border: none;
+            padding: 12px 36px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 900;
+            font-family: inherit;
+            font-size: 1rem;
+            margin-top: 12px;
+            transition: all 0.3s;
+        }
+        .modal-btn:hover { transform: scale(1.05); box-shadow: 0 5px 20px rgba(255,215,0,0.4); }
+        .modal-close {
+            position: absolute;
+            top: 12px; right: 16px;
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* ========== 兑换记录弹窗 ========== */
+        .record-dialog {
+            background: var(--panel);
+            border: 2px solid var(--gold);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 500px;
+            width: 92%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 0 40px rgba(255,215,0,0.2);
+            animation: modalIn 0.3s ease-out;
+        }
+        .record-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card);
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        .record-status {
+            font-size: 0.7rem;
+            padding: 4px 12px;
+            border-radius: 12px;
+        }
+        .record-status.pending { background: rgba(255,170,0,0.2); color: #ffaa00; }
+        .record-status.approved { background: rgba(0,255,65,0.15); color: var(--green); }
+
+        /* ========== 跑马灯 ========== */
+        .ticker-bar {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 8px 0;
+            margin-bottom: 12px;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .ticker-text {
+            display: inline-block;
+            animation: ticker 30s linear infinite;
+            color: var(--gold);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        @keyframes ticker {
+            0% { transform: translateX(100vw); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* ========== 按钮 ========== */
+        .btn {
+            padding: 8px 18px;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-gold {
+            background: linear-gradient(135deg, var(--gold), #ff8c00);
+            color: #000;
+        }
+        .btn-gold:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(255,215,0,0.3); }
+        .btn-gold:disabled {
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+        .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+        .btn-sm { padding: 5px 12px; font-size: 0.7rem; }
+
+        /* ========== 暴击特效 ========== */
+        .crit-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 999;
+        }
+        .crit-text {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--gold);
+            text-shadow: 0 0 30px var(--gold);
+            animation: critPop 1s ease-out forwards;
+        }
+        @keyframes critPop {
+            0% { transform: translate(-50%, -50%) scale(0) rotate(-10deg); opacity: 1; }
+            50% { transform: translate(-50%, -50%) scale(1.3) rotate(5deg); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1.5) rotate(0deg); opacity: 0; }
+        }
+
+        /* ========== 烟花 ========== */
+        .firework {
+            position: fixed;
+            pointer-events: none;
+            z-index: 998;
+        }
+        .firework-particle {
+            position: absolute;
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            animation: particleBurst 1s ease-out forwards;
+        }
+        @keyframes particleBurst {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
+        }
+
+        /* ========== 响应式 ========== */
+        @media (max-width: 900px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .shop-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .nav-brand h1 { font-size: 1rem; }
+            .panel-body { max-height: 300px; }
+            .chat-panel { height: 260px; }
+            .badges-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        @media (max-width: 500px) {
+            .app-container { padding: 8px; }
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 6px;
+            }
+            .stat-card { padding: 10px 12px; }
+            .stat-icon { font-size: 1.5rem; }
+            .stat-value { font-size: 1.1rem; }
+            .cal-month-section { flex-direction: column; }
+            .cal-month-wrap { min-width: 100%; }
+            .cal-day { font-size: 0.78rem; min-height: 48px; }
+            .cal-day .course-name { font-size: 0.7rem; }
+            .cal-day .course-name.eng { font-size: 0.72rem; }
+            .cal-day .course-name.math { font-size: 0.75rem; }
+            .cal-day .course-name.chn { font-size: 0.8rem; }
+            .cal-day .course-time { font-size: 0.65rem; }
+        }
+
+        /* ========== 工具提示 ========== */
+        .tooltip {
+            position: relative;
+        }
+        .tooltip::after {
+            content: attr(data-tip);
+            position: absolute;
+            bottom: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #000;
+            color: var(--gold);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+
+        /* ========== 虚拟人物 / 铠甲系统 ========== */
+        .warrior-section {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.5s;
+        }
+        .warrior-canvas-wrap {
+            flex: 1;
+            min-width: 220px;
+            text-align: center;
+            position: relative;
+        }
+        .warrior-title {
+            color: var(--gold);
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .warrior-status { font-size: 0.7rem; color: var(--text-dim); }
+        .warrior-img-container {
+            position: relative;
+            display: inline-block;
+        }
+        .warrior-img {
+            width: 180px;
+            height: 220px;
+            object-fit: contain;
+            margin: 0 auto;
+            background: rgba(0,0,0,0.3);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            display: block;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 2;
+        }
+        /* 盔甲收集进度光环 */
+        .warrior-aura {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 190px;
+            height: 230px;
+            border-radius: 14px;
+            pointer-events: none;
+            z-index: 1;
+            transition: all 0.6s;
+        }
+        .warrior-aura.feet-1 { box-shadow: 0 0 12px 3px rgba(255, 215, 0, 0.15); }
+        .warrior-aura.feet-2 { box-shadow: 0 0 18px 5px rgba(255, 215, 0, 0.2); }
+        .warrior-aura.feet-3 { box-shadow: 0 0 24px 7px rgba(255, 215, 0, 0.3), inset 0 0 15px rgba(255, 215, 0, 0.05); }
+        .warrior-aura.body-1 { box-shadow: 0 0 28px 8px rgba(255, 140, 0, 0.3), 0 0 15px 3px rgba(255, 215, 0, 0.2); }
+        .warrior-aura.body-2 { box-shadow: 0 0 32px 10px rgba(255, 100, 0, 0.35), 0 0 20px 5px rgba(255, 215, 0, 0.25), inset 0 0 20px rgba(255, 215, 0, 0.08); }
+        .warrior-aura.body-3 { box-shadow: 0 0 40px 12px rgba(255, 80, 0, 0.4), 0 0 30px 8px rgba(255, 215, 0, 0.35), inset 0 0 30px rgba(255, 215, 0, 0.1); }
+        .warrior-aura.head-1 { box-shadow: 0 0 35px 10px rgba(255, 100, 0, 0.4), 0 0 25px 6px rgba(255, 215, 0, 0.35), 0 0 15px 4px rgba(180, 77, 255, 0.15), inset 0 0 25px rgba(255, 215, 0, 0.12); }
+        .warrior-aura.head-2 { box-shadow: 0 0 40px 12px rgba(255, 80, 0, 0.45), 0 0 30px 10px rgba(255, 215, 0, 0.4), 0 0 20px 6px rgba(180, 77, 255, 0.25), inset 0 0 35px rgba(255, 215, 0, 0.15); }
+        .warrior-aura.head-3 { box-shadow: 0 0 45px 15px rgba(255, 60, 0, 0.5), 0 0 35px 12px rgba(255, 215, 0, 0.45), 0 0 25px 8px rgba(180, 77, 255, 0.35), inset 0 0 45px rgba(255, 215, 0, 0.18); }
+        .warrior-aura.items-1 { box-shadow: 0 0 50px 15px rgba(255, 50, 0, 0.55), 0 0 40px 14px rgba(255, 215, 0, 0.5), 0 0 30px 10px rgba(180, 77, 255, 0.4), 0 0 20px 5px rgba(0, 180, 255, 0.2), inset 0 0 50px rgba(255, 215, 0, 0.2); }
+        .warrior-aura.items-2 { box-shadow: 0 0 55px 18px rgba(255, 40, 0, 0.6), 0 0 45px 16px rgba(255, 215, 0, 0.55), 0 0 35px 12px rgba(180, 77, 255, 0.45), 0 0 25px 8px rgba(0, 180, 255, 0.3), inset 0 0 60px rgba(255, 215, 0, 0.25); }
+        .warrior-aura.complete {
+            box-shadow: 
+                0 0 60px 20px rgba(255, 30, 0, 0.7),
+                0 0 50px 20px rgba(255, 215, 0, 0.65),
+                0 0 40px 15px rgba(180, 77, 255, 0.55),
+                0 0 30px 12px rgba(0, 180, 255, 0.4),
+                0 0 20px 10px rgba(0, 255, 65, 0.25),
+                inset 0 0 80px rgba(255, 215, 0, 0.3);
+            animation: aura-pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes aura-pulse {
+            0%, 100% { 
+                box-shadow: 
+                    0 0 60px 20px rgba(255, 30, 0, 0.7),
+                    0 0 50px 20px rgba(255, 215, 0, 0.65),
+                    0 0 40px 15px rgba(180, 77, 255, 0.55),
+                    0 0 30px 12px rgba(0, 180, 255, 0.4),
+                    0 0 20px 10px rgba(0, 255, 65, 0.25),
+                    inset 0 0 80px rgba(255, 215, 0, 0.3);
+            }
+            50% { 
+                box-shadow: 
+                    0 0 80px 25px rgba(255, 20, 0, 0.8),
+                    0 0 65px 25px rgba(255, 215, 0, 0.75),
+                    0 0 50px 20px rgba(180, 77, 255, 0.6),
+                    0 0 40px 15px rgba(0, 180, 255, 0.5),
+                    0 0 30px 12px rgba(0, 255, 65, 0.35),
+                    inset 0 0 100px rgba(255, 215, 0, 0.4);
+            }
+        }
+        /* 雪纳瑞狗狗出现动画 */
+        .schnauzer-companion {
+            position: absolute;
+            bottom: -15px;
+            right: -10px;
+            font-size: 2.5rem;
+            z-index: 10;
+            animation: dog-bounce 1s ease-in-out infinite, dog-enter 0.6s ease-out;
+            filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.5));
+            pointer-events: none;
+        }
+        @keyframes dog-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        @keyframes dog-enter {
+            from { transform: scale(0) rotate(-30deg); opacity: 0; }
+            to { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        .warrior-section.warrior-complete .warrior-img {
+            border-color: var(--gold);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+            animation: saint-glow 2s ease-in-out infinite alternate;
+        }
+        @keyframes saint-glow {
+            from { filter: brightness(1) drop-shadow(0 0 10px rgba(255,215,0,0.2)); }
+            to { filter: brightness(1.1) drop-shadow(0 0 25px rgba(255,215,0,0.4)); }
+        }
+        .warrior-armor-grid {
+            flex: 1;
+            min-width: 240px;
+        }
+        .armor-part-title {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin: 8px 0 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .armor-row {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .armor-slot {
+            width: 40px; height: 40px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            background: rgba(0,0,0,0.2);
+            opacity: 0.35;
+            filter: grayscale(100%);
+            transition: all 0.3s;
+        }
+        .armor-slot.collected {
+            opacity: 1;
+            filter: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 8px rgba(255,215,0,0.2);
+            background: rgba(255,215,0,0.08);
+        }
+        .armor-slot.final { border-color: var(--purple); }
+        .armor-slot.final.collected { background: rgba(180,77,255,0.12); box-shadow: 0 0 10px rgba(180,77,255,0.3); animation: slot-pulse 1.5s ease-in-out infinite; }
+        @keyframes slot-pulse {
+            0%, 100% { box-shadow: 0 0 10px rgba(180,77,255,0.3); }
+            50% { box-shadow: 0 0 20px rgba(180,77,255,0.6); }
+        }
+        .use-item-btn {
+            margin-left: 4px;
+            font-size: 0.55rem;
+            padding: 2px 5px;
+            border-radius: 4px;
+            border: 1px solid var(--red);
+            background: transparent;
+            color: var(--red);
+            cursor: pointer;
+        }
+        .use-item-btn:hover { background: var(--red); color: #000; }
+
+        /* 完整铠甲特效 */
+        .warrior-complete .warrior-svg {
+            border-color: var(--gold);
+            box-shadow: 0 0 30px rgba(255,215,0,0.3);
+            animation: complete-glow 2s ease-in-out infinite;
+        }
+        @keyframes complete-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(255,215,0,0.2); }
+            50% { box-shadow: 0 0 40px rgba(255,215,0,0.5); }
+        }
+
+        /* 重置按钮 */
+        .reset-btn {
+            background: transparent;
+            border: 1px solid var(--red);
+            color: var(--red);
+            padding: 6px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.75rem;
+            transition: all 0.3s;
+        }
+        .reset-btn:hover { background: var(--red); color: #000; }
+
+        /* 日历缩小 + 课程嵌入 */
+        .cal-month-section {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .cal-month-wrap {
+            flex: 1;
+            min-width: 280px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .cal-month-wrap .cal-header {
+            padding: 6px 12px;
+            background: rgba(0,0,0,0.3);
+        }
+        .cal-month-wrap .cal-month-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--gold);
+            text-align: center;
+            padding: 4px 0;
+            letter-spacing: 1px;
+        }
+        .cal-grid { gap: 1px; padding: 4px 6px 6px; }
+        .cal-day { font-size: 0.75rem; border-radius: 6px; aspect-ratio: 1; padding: 2px; min-height: 44px; }
+        .cal-day-header { padding: 4px 0; font-size: 0.6rem; }
+        .cal-day.today { border-width: 1px; }
+        .cal-day-label {
+            font-size: 0.72rem;
+            line-height: 1;
+        }
+        .cal-day.has-activity .cal-day-label {
+            font-size: 0.85rem;
+        }
+        .course-dot {
+            width: 3px; height: 3px;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 2px;
+        }
+        .course-dot.eng { background: var(--blue); }
+        .course-dot.math { background: var(--green); }
+        .course-dot.chn { background: #ffaa00; }
+        .cal-day .course-time {
+            font-size: 0.5rem;
+            color: var(--text-dim);
+            line-height: 1.1;
+            text-align: center;
+            margin-top: 1px;
+        }
+        .cal-day .course-name {
+            font-size: 0.6rem;
+            font-weight: 700;
+            line-height: 1.1;
+            text-align: center;
+            margin-top: 0px;
+        }
+        .cal-day .course-name.eng { color: var(--blue); }
+        .cal-day .course-name.math { color: var(--green); }
+        .cal-day .course-name.chn { color: #ffaa00; }
+        .calendar-panel { margin-bottom: 10px; }
+        .cal-nav-btn {
+            padding: 3px 10px;
+            font-size: 0.7rem;
+        }
+        .cal-nav-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        .cal-nav-section .cal-month-label {
+            color: var(--gold);
+            font-weight: 900;
+            font-size: 0.9rem;
+        }
+
+        .tooltip:hover::after { opacity: 1; }
+
+        /* ========== 终极技能样式 ========== */
+        .ultimate-skill-card {
+            background: linear-gradient(135deg, #1a1a2e, #2a1a3e);
+            border: 2px solid var(--purple);
+            border-radius: 10px;
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .ultimate-skill-card:hover {
+            border-color: var(--gold);
+            box-shadow: 0 0 20px rgba(180, 77, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        .ultimate-skill-card.on-cooldown {
+            opacity: 0.5;
+            cursor: not-allowed;
+            border-color: var(--border);
+        }
+        .ultimate-skill-card.on-cooldown:hover {
+            border-color: var(--border);
+            box-shadow: none;
+            transform: none;
+        }
+        .ultimate-skill-icon {
+            font-size: 2.2rem;
+            flex-shrink: 0;
+            animation: skill-glow 2s ease-in-out infinite;
+        }
+        @keyframes skill-glow {
+            0%, 100% { filter: drop-shadow(0 0 6px rgba(180, 77, 255, 0.4)); }
+            50% { filter: drop-shadow(0 0 15px rgba(180, 77, 255, 0.8)); }
+        }
+        .ultimate-skill-info { flex: 1; min-width: 0; }
+        .ultimate-skill-name {
+            font-size: 0.85rem;
+            font-weight: 900;
+            color: var(--gold);
+        }
+        .ultimate-skill-desc {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            margin-top: 2px;
+        }
+        .ultimate-skill-cd {
+            font-size: 0.65rem;
+            color: var(--red);
+            margin-top: 2px;
+        }
+        .ultimate-skill-btn {
+            background: linear-gradient(135deg, var(--purple), #ff4444);
+            border: none;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 900;
+            font-size: 0.75rem;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+        .ultimate-skill-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(180, 77, 255, 0.4);
+        }
+        .ultimate-skill-btn:disabled {
+            background: #333;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* ========== 课程表面板 ========== */
+        .course-table-panel {
+            margin-bottom: 12px;
+        }
+        .course-table-body {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 8px 12px;
+            font-size: 0.78rem;
+        }
+        .course-table-body::-webkit-scrollbar { width: 4px; }
+        .course-table-body::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 2px;
+        }
+        .course-stats {
+            padding: 6px 16px;
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            border-top: 1px solid var(--border);
+            background: rgba(0,0,0,0.15);
+        }
+        .course-legend {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            padding: 4px 16px;
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            background: rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 星空背景 -->
+    <div class="stars-bg" id="stars-bg"></div>
+
+    <!-- 暴击特效层 -->
+    <div class="crit-overlay" id="crit-overlay"></div>
+
+    <div class="app-container">
+
+        <!-- 跑马灯 -->
+        <div class="ticker-bar">
+            <div class="ticker-text">
+                🛰️ DELTA FORCE 战术电台 ｜ 暑期精英特训 ｜ "Stay low. Stay sharp." ｜ 三角洲特种作战学院 ｜
+                战士，今天的数学密码拆了吗？ ｜ "Tonight I just want to take you higher!" ｜
+                🏖️ 暑期作战第 <span id="summer-day">1</span> 天 ｜ 坚持就是胜利！ ｜ 李童心 · 2026 暑期计划
+            </div>
+        </div>
+
+        <!-- 顶部导航 -->
+        <div class="top-nav">
+            <div class="nav-brand">
+                <span class="logo">🛡️</span>
+                <div>
+                    <h1>DELTA FORCE</h1>
+                    <div class="subtitle">🔥 🔥 暑期精英特训终端 · 李童心</div>
+                </div>
+            </div>
+            <div class="nav-actions">
+                <button class="btn btn-gold btn-sm" id="checkin-btn" onclick="dailyCheckin()">📅 签到</button>
+                <button class="btn btn-outline btn-sm" onclick="showRecords()">📋 兑换记录</button>
+                <button class="btn btn-outline btn-sm" id="music-btn" onclick="toggleMusic()">🎵</button>
+                <button class="reset-btn" onclick="showResetModal()">🔄 重置</button>
+            </div>
+        </div>
+
+        <!-- 状态卡片 -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-info">
+                    <div class="stat-label">当前军衔</div>
+                    <div class="stat-value" id="rank-display">列兵</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">💎</div>
+                <div class="stat-info">
+                    <div class="stat-label">可用积分</div>
+                    <div class="stat-value green" id="pts-display">0</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🏆</div>
+                <div class="stat-info">
+                    <div class="stat-label">累计获得</div>
+                    <div class="stat-value gold" id="total-display">0</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🔥</div>
+                <div class="stat-info">
+                    <div class="stat-label">连续签到</div>
+                    <div class="stat-value purple" id="streak-display">0 天</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-info">
+                    <div class="stat-label">今日任务</div>
+                    <div class="stat-value blue" id="today-done-display">0/6</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 军衔进度条 -->
+        <div class="rank-section">
+            <div class="rank-header">
+                <div class="rank-current">
+                    <span class="icon" id="rank-icon">🔰</span>
+                    <span class="name" id="rank-name">列兵</span>
+                </div>
+                <div class="rank-next" id="rank-next-info">下一级: 下士 (0/500)</div>
+            </div>
+            <div class="rank-bar-wrap">
+                <div class="rank-bar-fill" id="rank-bar" style="width: 0%"></div>
+            </div>
+            <div class="rank-milestones">
+                <span>列兵</span><span>下士</span><span>中士</span><span>上士</span><span>少尉</span>
+                <span>中尉</span><span>上尉</span><span>少校</span><span>中校</span><span>上校</span><span>将军</span>
+            </div>
+        </div>
+
+
+        <!-- 虚拟人物 / 铠甲收集 -->
+        <div class="warrior-section" id="warrior-section">
+            <div class="warrior-canvas-wrap">
+                <div class="warrior-title">
+                    <span>⚔️ 圣斗士 · 李隆基</span>
+                    <span class="warrior-status" id="warrior-status">0/12 完整</span>
+                </div>
+                <div class="warrior-img-container">
+                    <div class="warrior-aura" id="warrior-aura"></div>
+                    <img class="warrior-img" id="warrior-img" src="warrior_saint.png" alt="圣斗士·李隆基">
+                    <div class="schnauzer-companion" id="schnauzer-dog" style="display:none;">🐕</div>
+                </div>
+            </div>
+            <div class="warrior-armor-grid">
+                <div class="armor-part-title">🦿 脚部圣衣</div>
+                <div class="armor-row" id="armor-feet"></div>
+                <div class="armor-part-title">🛡️ 身躯圣衣</div>
+                <div class="armor-row" id="armor-body"></div>
+                <div class="armor-part-title">⛑️ 头部圣衣</div>
+                <div class="armor-row" id="armor-head"></div>
+                <div class="armor-part-title">⚡ 圣斗士道具</div>
+                <div class="armor-row" id="armor-items"></div>
+            </div>
+        </div>
+
+
+        <!-- 暑期日历 7月+8月 -->
+        <div class="panel calendar-panel">
+            <div class="cal-nav-section">
+                <span class="cal-month-label">📅 2026 暑期作战日历</span>
+            </div>
+            <div class="cal-month-section">
+                <div class="cal-month-wrap">
+                    <div class="cal-month-label">🔥 7月</div>
+                    <div class="cal-grid" id="cal-grid-7"></div>
+                </div>
+                <div class="cal-month-wrap">
+                    <div class="cal-month-label">⚡ 8月</div>
+                    <div class="cal-grid" id="cal-grid-8"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 课程表面板 -->
+        <div class="panel course-table-panel">
+            <div class="panel-header">
+                <h3 style="color:var(--blue);">📋 暑期课程总表</h3>
+                <span style="font-size:0.7rem;color:var(--text-dim);">7月-8月完整安排</span>
+            </div>
+            <div class="course-legend">
+                <span>📘 <span style="color:var(--blue);">英语</span> 7/5-16（休10-11）</span>
+                <span>📗 <span style="color:var(--green);">数学</span> 7/18起（8月无课）</span>
+                <span>📙 <span style="color:#ffaa00;">语文</span> 7/6-11 + 8/24-29</span>
+            </div>
+            <div class="course-table-body" id="course-table-body">
+                <div style="text-align:center;color:var(--text-dim);padding:20px;">加载中...</div>
+            </div>
+            <div class="course-stats" id="course-stats"></div>
+        </div>
+
+        <!-- 主布局 -->
+        <div class="main-grid">
+
+            <!-- 左栏 -->
+            <div style="display:flex;flex-direction:column;gap:12px;">
+
+                <!-- 每日挑战 -->
+                <div class="challenge-card" id="challenge-card" style="display:none;">
+                    <div class="challenge-inner">
+                        <div class="challenge-header">
+                            <h4>⚡ 今日战术挑战</h4>
+                            <div class="challenge-reward" id="challenge-reward">+200 PTS</div>
+                        </div>
+                        <p style="font-size:0.8rem;margin-bottom:8px;" id="challenge-text"></p>
+                        <div class="challenge-progress">
+                            <div class="challenge-progress-fill" id="challenge-progress-fill" style="width:0%"></div>
+                        </div>
+                        <button class="btn btn-gold btn-sm" id="challenge-btn" onclick="completeChallenge()" style="margin-top:8px;width:100%;justify-content:center;">
+                            🏆 完成挑战
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 幸运大转盘 -->
+                <div class="panel" id="lucky-wheel-panel">
+                    <div class="panel-header">
+                        <h3 style="color:#ffaa00;">🎰 幸运大转盘</h3>
+                        <span style="font-size:0.7rem;color:var(--text-dim);" id="wheel-status">每日免费1次</span>
+                    </div>
+                    <div class="panel-body" style="text-align:center;padding:16px;">
+                        <div id="wheel-display" style="font-size:3rem;margin:8px 0;transition:transform 0.1s;display:inline-block;cursor:pointer;" onclick="spinWheel()">
+                            🎰
+                        </div>
+                        <div id="wheel-result" style="font-size:0.85rem;color:var(--gold);min-height:24px;margin-top:8px;"></div>
+                        <button class="btn btn-gold btn-sm" id="wheel-btn" onclick="spinWheel()" style="margin-top:8px;">
+                            🎲 转动转盘
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 周末Boss挑战 -->
+                <div class="panel" id="boss-panel" style="display:none;">
+                    <div class="panel-header">
+                        <h3 style="color:var(--red);">👾 周末Boss挑战</h3>
+                        <span style="font-size:0.7rem;color:var(--text-dim);" id="boss-timer">限时挑战</span>
+                    </div>
+                    <div class="panel-body" style="padding:14px;">
+                        <div id="boss-info" style="text-align:center;"></div>
+                    </div>
+                </div>
+
+                <!-- Combo 连击显示 -->
+                <div class="panel" id="combo-panel" style="display:none;">
+                    <div class="panel-header">
+                        <h3 style="color:#ff4444;">🔥 连击系统</h3>
+                        <span style="font-size:0.7rem;color:var(--text-dim);" id="combo-status">无连击</span>
+                    </div>
+                    <div class="panel-body" style="text-align:center;padding:12px;">
+                        <div id="combo-display" style="font-size:2.5rem;font-weight:900;color:#ff4444;text-shadow:0 0 15px rgba(255,68,68,0.5);">
+                            0x
+                        </div>
+                        <div style="font-size:0.75rem;color:var(--text-dim);margin-top:4px;" id="combo-desc">连续完成任务获得积分加成</div>
+                    </div>
+                </div>
+
+                <!-- 任务面板 -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3 style="color:var(--green);">⚔️ 战术任务面板</h3>
+                        <span style="font-size:0.7rem;color:var(--text-dim);" id="task-summary">0/6 已完成 · 可叠加</span>
+                    </div>
+                    <div class="panel-body task-list" id="task-list"></div>
+                </div>
+
+                <!-- 商店 -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3 style="color:var(--gold);">🏪 DELTA 物资兑换库</h3>
+                        <span style="font-size:0.7rem;color:var(--text-dim);">积分可兑换</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="shop-grid" id="shop-grid"></div>
+                    </div>
+                </div>
+
+                <!-- 终极技能面板 -->
+                <div class="panel" id="ultimate-skill-panel" style="display:none;">
+                    <div class="panel-header">
+                        <h3 style="color:var(--purple);">⚡ 终极技能</h3>
+                        <span style="font-size:0.7rem;color:var(--text-dim);" id="ultimate-status">就绪</span>
+                    </div>
+                    <div class="panel-body" style="padding:12px;">
+                        <div id="ultimate-skills-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右栏 -->
+            <div style="display:flex;flex-direction:column;gap:12px;">
+
+                <!-- 成就墙 -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3 style="color:var(--gold);">🏅 战术成就墙</h3>
+                        <span style="font-size:0.7rem;color:var(--text-dim);" id="badge-count">0/12</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="badges-grid" id="badges-grid"></div>
+                    </div>
+                </div>
+
+                <!-- Mars 教官聊天 -->
+                <div class="panel chat-panel">
+                    <div class="panel-header">
+                        <h3 style="color:var(--gold);">🛰️ DELTA 教官战术终端</h3>
+                    </div>
+                    <div class="chat-messages" id="chat-box">
+                        <div class="chat-msg mars">
+                            <span class="sender">[Mars]</span>
+                            <span class="time">--:--</span>
+                            <div>系统初始化中...</div>
+                        </div>
+                    </div>
+                    <div class="chat-input-wrap">
+                        <input class="chat-input" id="chat-in" placeholder="输入战术报告..." onkeydown="if(event.key==='Enter')sendMsg()">
+                        <button class="chat-send" onclick="sendMsg()">➤</button>
+                    </div>
+                </div>
+
+                <!-- 今日流水 -->
+                <div class="panel" style="max-height:150px;">
+                    <div class="panel-header">
+                        <h3 style="color:var(--text-dim);">📊 今日积分流水</h3>
+                    </div>
+                    <div class="panel-body" id="log-area" style="max-height:100px;font-size:0.7rem;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 签到弹窗 -->
+    <div class="modal-overlay" id="checkin-modal">
+        <div class="modal-dialog" style="position:relative;">
+            <h2>📅 每日签到</h2>
+            <p>欢迎回来，战士！</p>
+            <div class="modal-bonus" id="checkin-bonus">+20 PTS</div>
+            <p id="checkin-streak" style="color:var(--gold);font-size:0.9rem;"></p>
+            <button class="modal-btn" onclick="closeCheckin()">领取奖励！</button>
+        </div>
+    </div>
+
+    <!-- 全部重置弹窗 -->
+    <div class="modal-overlay" id="reset-modal">
+        <div class="modal-dialog" style="position:relative;max-width:340px;">
+            <h2>🚨 全部重置</h2>
+            <p style="font-size:0.8rem;color:var(--red);margin:8px 0;">此操作会清空所有数据！</p>
+            <p style="font-size:0.75rem;color:var(--text-dim);">请输入密码：</p>
+            <input type="password" id="reset-password" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font-family:inherit;margin:10px 0;text-align:center;" placeholder="输入密码">
+            <div style="display:flex;gap:10px;margin-top:10px;">
+                <button class="modal-btn" onclick="closeResetModal()" style="flex:1;background:var(--text-dim);color:#000;">取消</button>
+                <button class="modal-btn" onclick="confirmReset()" style="flex:1;background:var(--red);color:#000;">确认重置</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 兑换记录弹窗 -->
+    <div class="modal-overlay" id="record-modal">
+        <div class="record-dialog" style="position:relative;">
+            <h2 style="color:var(--gold);margin-bottom:16px;">📋 兑换记录（家长审批用）</h2>
+            <div id="record-list"></div>
+            <button class="modal-btn" onclick="closeRecords()" style="width:100%;margin-top:16px;">关闭</button>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        //  Delta Force 暑期精英特训终端 — 核心逻辑
+        // ============================================================
+
+        const STORE_KEY = 'delta24k_summer_v2';
+        let data;
+
+        // ---- 数据加载 / 保存 ----
+        function loadData() {
+            try {
+                const raw = localStorage.getItem(STORE_KEY);
+                if (raw) return JSON.parse(raw);
+            } catch (e) {}
+            return {
+                pts: 0,
+                totalEarned: 0,
+                streak: 0,
+                lastCheckin: '',
+                todayTasks: {},
+                todayDate: '',
+                logs: [],
+                badges: {},
+                taskHistory: {},
+                records: [],
+                critCount: 0,
+                challengeCompleted: false,
+                challengeDate: '',
+                dailyChallenge: null,
+                summerStart: '2026-07-01',
+                musicOn: false,
+                armor: {},
+                armorUsed: 0,
+                courseStudy: {}
+            };
+        }
+
+        function saveData() {
+            localStorage.setItem(STORE_KEY, JSON.stringify(data));
+        }
+
+        // ---- 音效系统 ----
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new AudioCtx();
+        }
+
+        function playBeep(freq, duration, type = 'sine', vol = 0.15) {
+            initAudio();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function playSound(type) {
+            const t = audioCtx ? audioCtx.currentTime : 0;
+            if (type === 'task') {
+                playBeep(523, 0.15); setTimeout(() => playBeep(659, 0.15), 100); setTimeout(() => playBeep(784, 0.2), 200);
+            } else if (type === 'crit') {
+                playBeep(440, 0.1); setTimeout(() => playBeep(660, 0.1, 'square', 0.2), 80); setTimeout(() => playBeep(880, 0.15, 'square', 0.25), 160); setTimeout(() => playBeep(1320, 0.3, 'square', 0.3), 240);
+            } else if (type === 'buy') {
+                playBeep(392, 0.12); setTimeout(() => playBeep(523, 0.15), 100);
+            } else if (type === 'badge') {
+                playBeep(523, 0.12); setTimeout(() => playBeep(659, 0.12), 120); setTimeout(() => playBeep(784, 0.12), 240); setTimeout(() => playBeep(1047, 0.3), 360);
+            } else if (type === 'error') {
+                playBeep(200, 0.3, 'sawtooth', 0.1);
+            }
+        }
+
+        // ---- 背景音乐 ----
+        let musicPlaying = false, musicTimer;
+
+        function toggleMusic() {
+            const btn = document.getElementById('music-btn');
+            if (musicPlaying) {
+                stopMusic();
+                btn.innerHTML = '🎵';
+                data.musicOn = false;
+            } else {
+                startMusic();
+                btn.innerHTML = '🎶';
+                data.musicOn = true;
+            }
+            saveData();
+        }
+
+        function startMusic() {
+            initAudio();
+            musicPlaying = true;
+            const melody = [
+                { n: 523, d: 0.18 }, { n: 659, d: 0.18 }, { n: 784, d: 0.18 }, { n: 1047, d: 0.35 },
+                { n: 784, d: 0.18 }, { n: 659, d: 0.18 }, { n: 523, d: 0.35 }, { n: 0, d: 0.2 }
+            ];
+            let i = 0;
+            function loop() {
+                if (!musicPlaying) return;
+                const { n, d } = melody[i % melody.length];
+                if (n > 0) playBeep(n, d, 'sine', 0.06);
+                i++;
+                musicTimer = setTimeout(loop, d * 1000);
+            }
+            loop();
+        }
+
+        function stopMusic() {
+            musicPlaying = false;
+            clearTimeout(musicTimer);
+        }
+
+        // ---- 星空背景 ----
+        function createStars() {
+            const bg = document.getElementById('stars-bg');
+            bg.innerHTML = '';
+            for (let i = 0; i < 80; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = (Math.random() * 2 + 1) + 'px';
+                star.style.height = star.style.width;
+                star.style.setProperty('--dur', (Math.random() * 3 + 2) + 's');
+                star.style.animationDelay = Math.random() * 3 + 's';
+                bg.appendChild(star);
+            }
+        }
+
+        // ---- 日期工具 ----
+        function todayStr() { return new Date().toISOString().slice(0, 10); }
+        function fmtTime() {
+            const d = new Date();
+            return d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+        }
+        function fmtDate(d) {
+            return d.toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'short' });
+        }
+
+        // ---- 军衔系统 ----
+        const RANKS = [
+            { min: 0, name: '列兵', icon: '🔰' },
+            { min: 500, name: '下士', icon: '⭐' },
+            { min: 1500, name: '中士', icon: '⭐⭐' },
+            { min: 3000, name: '上士', icon: '🌟' },
+            { min: 5000, name: '少尉', icon: '🎖️' },
+            { min: 8000, name: '中尉', icon: '🎖️🎖️' },
+            { min: 12000, name: '上尉', icon: '💫' },
+            { min: 18000, name: '少校', icon: '🏆' },
+            { min: 25000, name: '中校', icon: '🏆🏆' },
+            { min: 35000, name: '上校', icon: '👑' },
+            { min: 50000, name: '将军', icon: '👑👑👑' }
+        ];
+
+        function getRank(pts) {
+            let r = RANKS[0];
+            for (const rank of RANKS) {
+                if (pts >= rank.min) r = rank;
+            }
+            return r;
+        }
+
+        function updateRankUI() {
+            const rank = getRank(data.totalEarned);
+            const idx = RANKS.indexOf(rank);
+            const next = RANKS[idx + 1];
+
+            document.getElementById('rank-display').innerText = rank.icon + ' ' + rank.name;
+            document.getElementById('rank-icon').innerText = rank.icon;
+            document.getElementById('rank-name').innerText = rank.name;
+
+            const bar = document.getElementById('rank-bar');
+            if (next) {
+                const progress = ((data.totalEarned - rank.min) / (next.min - rank.min)) * 100;
+                bar.style.width = Math.min(progress, 100) + '%';
+                document.getElementById('rank-next-info').innerText =
+                    `下一级: ${next.icon} ${next.name} (${data.totalEarned}/${next.min})`;
+            } else {
+                bar.style.width = '100%';
+                document.getElementById('rank-next-info').innerText = '👑 最高军衔！传奇战士！';
+            }
+        }
+
+
+        // ---- 铠甲收集系统 ----
+        const ARMOR_ITEMS = [
+            { id: 'foot1', name: '青铜圣靴', part: 'feet', icon: '🥾' },
+            { id: 'foot2', name: '白银护胫', part: 'feet', icon: '🦿' },
+            { id: 'foot3', name: '黄金飞翼靴', part: 'feet', icon: '👢' },
+            { id: 'body1', name: '天马圣衣·胸甲', part: 'body', icon: '🛡️' },
+            { id: 'body2', name: '天龙圣衣·护心', part: 'body', icon: '💎' },
+            { id: 'body3', name: '黄金圣衣·战甲', part: 'body', icon: '👑' },
+            { id: 'head1', name: '圣斗士面罩', part: 'head', icon: '🎭' },
+            { id: 'head2', name: '天龙座头盔', part: 'head', icon: '⛑️' },
+            { id: 'head3', name: '黄金圣冠', part: 'head', icon: '👑' },
+            { id: 'item1', name: '天马流星拳谱', part: 'items', icon: '⚡' },
+            { id: 'item2', name: '雅典娜之盾', part: 'items', icon: '🛡️' },
+            { id: 'item3', name: '黑白雪纳瑞', part: 'items', icon: '🐕', final: true },
+        ];
+
+        function getArmorByPart(part) {
+            return ARMOR_ITEMS.filter(a => a.part === part);
+        }
+
+        function collectedArmorCount() {
+            return ARMOR_ITEMS.filter(a => data.armor[a.id]).length;
+        }
+
+        function giveArmorPiece() {
+            const allCollected = ARMOR_ITEMS.filter(a => data.armor[a.id]);
+            if (allCollected.length >= ARMOR_ITEMS.length) return null;
+            const remaining = ARMOR_ITEMS.filter(a => !data.armor[a.id]);
+            const pick = remaining[Math.floor(Math.random() * remaining.length)];
+            data.armor[pick.id] = true;
+            saveData();
+            renderArmor();
+            return pick.name;
+        }
+
+        function useArmorPiece(id) {
+            if (!data.armor[id]) return;
+            data.armor[id] = false;
+            data.armorUsed = (data.armorUsed || 0) + 1;
+            const item = ARMOR_ITEMS.find(a => a.id === id);
+            addLog(`🎁 使用道具：${item.name}`, 'minus');
+            marsSpeak(`使用道具【${item.name}】，已消耗。当前累计使用 ${data.armorUsed} 件。`);
+            saveData();
+            renderArmor();
+            playSound('buy');
+        }
+
+        function renderArmor() {
+            const total = ARMOR_ITEMS.length;
+            const collected = collectedArmorCount();
+            document.getElementById('warrior-status').innerText = `${collected}/${total} 完整`;
+            const section = document.getElementById('warrior-section');
+            if (collected === total) section.classList.add('warrior-complete');
+            else section.classList.remove('warrior-complete');
+
+            ['feet','body','head','items'].forEach(part => {
+                const box = document.getElementById('armor-' + part);
+                if (!box) return;
+                box.innerHTML = getArmorByPart(part).map(a => {
+                    const has = data.armor[a.id];
+                    const btn = has && a.part === 'items'
+                        ? `<button class="use-item-btn" onclick="event.stopPropagation();useArmorPiece('${a.id}')">使用</button>`
+                        : '';
+                    const finalCls = a.final ? 'final' : '';
+                    return `<div class="armor-slot ${has ? 'collected' : ''} ${finalCls}" title="${a.name}">
+                        ${a.icon}${btn}
+                    </div>`;
+                }).join('');
+            });
+
+            drawWarrior(collected);
+        }
+
+        function drawWarrior(collected) {
+            const img = document.getElementById('warrior-img');
+            const aura = document.getElementById('warrior-aura');
+            const dog = document.getElementById('schnauzer-dog');
+            if (!img) return;
+            const total = ARMOR_ITEMS.length;
+            const percent = collected / total;
+
+            // 图片亮度/对比度随进度提升
+            img.style.filter = `brightness(${1 + percent * 0.2}) contrast(${1 + percent * 0.15}) saturate(${1 + percent * 0.3})`;
+
+            // 图片边框随进度变化
+            if (percent >= 1) {
+                img.style.borderColor = 'var(--gold)';
+                img.style.boxShadow = '0 0 35px rgba(255, 215, 0, 0.4), 0 0 60px rgba(180, 77, 255, 0.3)';
+            } else if (percent >= 0.5) {
+                img.style.borderColor = '#ff8c00';
+                img.style.boxShadow = `0 0 ${20 + percent * 30}px rgba(255, 140, 0, ${0.2 + percent * 0.3})`;
+            } else if (percent > 0) {
+                img.style.borderColor = 'rgba(255, 215, 0, 0.4)';
+                img.style.boxShadow = `0 0 ${10 + percent * 20}px rgba(255, 215, 0, ${0.1 + percent * 0.2})`;
+            }
+
+            // 光环系统
+            if (aura) {
+                aura.className = 'warrior-aura';
+                const feetCount = getArmorByPart('feet').filter(a => data.armor[a.id]).length;
+                const bodyCount = getArmorByPart('body').filter(a => data.armor[a.id]).length;
+                const headCount = getArmorByPart('head').filter(a => data.armor[a.id]).length;
+                const itemsCount = getArmorByPart('items').filter(a => data.armor[a.id]).length;
+
+                if (feetCount > 0) aura.classList.add('feet-' + feetCount);
+                if (bodyCount > 0) aura.classList.add('body-' + bodyCount);
+                if (headCount > 0) aura.classList.add('head-' + headCount);
+                if (itemsCount > 0) aura.classList.add('items-' + itemsCount);
+                if (collected >= total) aura.classList.add('complete');
+            }
+
+            // 雪纳瑞狗狗出现
+            if (dog) {
+                const hasSchnauzer = data.armor['item3'];
+                if (hasSchnauzer) {
+                    dog.style.display = 'block';
+                } else {
+                    dog.style.display = 'none';
+                }
+            }
+
+            // 完整收集时触发全屏特效
+            if (collected >= total && !data._armorCompleteTriggered) {
+                data._armorCompleteTriggered = true;
+                setTimeout(() => {
+                    showFirework();
+                    setTimeout(() => showFirework(), 300);
+                    setTimeout(() => showFirework(), 600);
+                    marsSpeak('🐕✨ 圣衣完全觉醒！雪纳瑞护体！李隆基已成为真正的黄金圣斗士！传奇降临！');
+                    playSound('crit');
+                }, 500);
+            }
+        }
+        // ---- 终极技能系统 ----
+        // 技能定义
+        const ULTIMATE_SKILLS = [
+            {
+                id: 'schnauzer_guard',
+                name: '🐕 雪纳瑞护体',
+                desc: '激活后下次任务必暴击×3！',
+                icon: '🐕',
+                unlockCondition: () => data.armor['item3'] === true,
+                cooldownHours: 24,
+                effect: function () {
+                    data._schnauzerActive = true;
+                    data._schnauzerUsedAt = Date.now();
+                    marsSpeak('🐕✨ 雪纳瑞护体激活！下次完成任务必定触发三倍暴击！冲啊！');
+                    playSound('crit');
+                    showFirework();
+                }
+            },
+            {
+                id: 'general_order',
+                name: '👑 将军号令',
+                desc: '今日所有任务积分×1.5倍！',
+                icon: '👑',
+                unlockCondition: () => data.totalEarned >= 50000,
+                cooldownHours: 48,
+                effect: function () {
+                    data._generalOrderActive = true;
+                    data._generalOrderUsedAt = Date.now();
+                    marsSpeak('👑 将军号令已下达！今日所有任务积分 ×1.5！战士们，全力冲锋！');
+                    playSound('crit');
+                    showFirework();
+                    setTimeout(() => showFirework(), 400);
+                }
+            }
+        ];
+
+        function getUnlockedSkills() {
+            return ULTIMATE_SKILLS.filter(s => s.unlockCondition());
+        }
+
+        function getSkillCooldown(skill) {
+            const usedKey = '_' + skill.id + 'UsedAt';
+            const lastUsed = data[usedKey] || 0;
+            const elapsed = Date.now() - lastUsed;
+            const cooldownMs = skill.cooldownHours * 3600000;
+            const remaining = cooldownMs - elapsed;
+            if (remaining <= 0) return 0;
+            return remaining;
+        }
+
+        function formatCooldown(ms) {
+            const hours = Math.floor(ms / 3600000);
+            const mins = Math.floor((ms % 3600000) / 60000);
+            if (hours > 0) return `${hours}小时${mins}分`;
+            return `${mins}分钟`;
+        }
+
+        function useUltimateSkill(skillId) {
+            const skill = ULTIMATE_SKILLS.find(s => s.id === skillId);
+            if (!skill) return;
+            if (!skill.unlockCondition()) {
+                marsSpeak('🚨 此技能尚未解锁！继续战斗吧！');
+                playSound('error');
+                return;
+            }
+            const cd = getSkillCooldown(skill);
+            if (cd > 0) {
+                marsSpeak(`⏳ 技能冷却中，还需等待 ${formatCooldown(cd)}。`);
+                playSound('error');
+                return;
+            }
+            skill.effect();
+            saveData();
+            renderUltimateSkills();
+        }
+
+        function renderUltimateSkills() {
+            const panel = document.getElementById('ultimate-skill-panel');
+            const list = document.getElementById('ultimate-skills-list');
+            if (!panel || !list) return;
+
+            const unlocked = getUnlockedSkills();
+            if (unlocked.length === 0) {
+                panel.style.display = 'none';
+                return;
+            }
+
+            panel.style.display = 'block';
+            list.innerHTML = unlocked.map(skill => {
+                const cd = getSkillCooldown(skill);
+                const onCD = cd > 0;
+                return `
+                    <div class="ultimate-skill-card ${onCD ? 'on-cooldown' : ''}" ${!onCD ? `onclick="useUltimateSkill('${skill.id}')"` : ''}>
+                        <div class="ultimate-skill-icon">${skill.icon}</div>
+                        <div class="ultimate-skill-info">
+                            <div class="ultimate-skill-name">${skill.name}</div>
+                            <div class="ultimate-skill-desc">${skill.desc}</div>
+                            ${onCD ? `<div class="ultimate-skill-cd">⏳ 冷却中: ${formatCooldown(cd)}</div>` : ''}
+                        </div>
+                        <button class="ultimate-skill-btn" ${onCD ? 'disabled' : ''}>
+                            ${onCD ? '冷却中' : '⚡ 激活'}
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ---- 连击 Combo 系统 ----
+        function updateCombo() {
+            const today = todayStr();
+            const lastTaskDate = data._lastTaskDate || '';
+            const now = Date.now();
+            const lastTaskTime = data._lastTaskTime || 0;
+
+            // 同一天内30分钟内连续完成任务算连击
+            if (lastTaskDate === today && (now - lastTaskTime) < 30 * 60 * 1000) {
+                data._comboCount = (data._comboCount || 0) + 1;
+            } else {
+                data._comboCount = 1;
+            }
+            data._lastTaskDate = today;
+            data._lastTaskTime = now;
+
+            const combo = data._comboCount || 0;
+            const panel = document.getElementById('combo-panel');
+            const display = document.getElementById('combo-display');
+            const status = document.getElementById('combo-status');
+            const desc = document.getElementById('combo-desc');
+
+            if (combo >= 2) {
+                panel.style.display = 'block';
+                const bonus = Math.min(combo * 5, 50);
+                display.innerText = combo + 'x';
+                status.innerText = `+${bonus}% 积分加成`;
+                desc.innerText = combo >= 10 ? '🔥🔥🔥 超级连击！你是战神！' :
+                    combo >= 5 ? '🔥🔥 强力连击！势不可挡！' :
+                    '🔥 连击生效中！继续冲刺！';
+            } else {
+                panel.style.display = 'none';
+            }
+
+            saveData();
+        }
+
+        function getComboBonus() {
+            const combo = data._comboCount || 0;
+            if (combo < 2) return 0;
+            return Math.min(combo * 5, 50) / 100; // 最多50%加成
+        }
+
+        // ---- 幸运大转盘 ----
+        const WHEEL_REWARDS = [
+            { label: '🎉 +10 PTS', pts: 10, weight: 25 },
+            { label: '🌟 +30 PTS', pts: 30, weight: 20 },
+            { label: '💎 +50 PTS', pts: 50, weight: 18 },
+            { label: '🔥 +80 PTS', pts: 80, weight: 15 },
+            { label: '⚡ +100 PTS', pts: 100, weight: 10 },
+            { label: '💥 +150 PTS', pts: 150, weight: 7 },
+            { label: '🏆 +200 PTS', pts: 200, weight: 4 },
+            { label: '👑 +500 PTS', pts: 500, weight: 1 },
+        ];
+
+        function spinWheel() {
+            const today = todayStr();
+            if (data._wheelUsedDate === today) {
+                marsSpeak('🎰 今日已转动过转盘，明天再来试试手气吧！');
+                playSound('error');
+                return;
+            }
+
+            data._wheelUsedDate = today;
+            const wheelEl = document.getElementById('wheel-display');
+            const resultEl = document.getElementById('wheel-result');
+            const btn = document.getElementById('wheel-btn');
+
+            // 动画
+            btn.disabled = true;
+            wheelEl.style.transform = 'rotate(0deg)';
+            let spins = 0;
+            const totalSpins = 12 + Math.floor(Math.random() * 8);
+            const spinInterval = setInterval(() => {
+                spins++;
+                wheelEl.style.transform = `rotate(${spins * 30}deg)`;
+                if (spins >= totalSpins) {
+                    clearInterval(spinInterval);
+
+                    // 加权随机
+                    const totalWeight = WHEEL_REWARDS.reduce((s, r) => s + r.weight, 0);
+                    let rand = Math.random() * totalWeight;
+                    let reward = WHEEL_REWARDS[0];
+                    for (const r of WHEEL_REWARDS) {
+                        rand -= r.weight;
+                        if (rand <= 0) { reward = r; break; }
+                    }
+
+                    data.pts += reward.pts;
+                    data.totalEarned += reward.pts;
+                    addLog(`🎰 幸运转盘 → ${reward.label}`, 'plus');
+                    resultEl.innerText = reward.label;
+                    marsSpeak(`🎰 转盘结果：${reward.label}！${reward.pts >= 100 ? '今天运气爆棚！' : '不错的手气！'}`);
+                    playSound(reward.pts >= 100 ? 'crit' : 'task');
+                    if (reward.pts >= 200) showFirework();
+
+                    saveData();
+                    refreshUI();
+                    updateWheelUI();
+                }
+            }, 80);
+        }
+
+        function updateWheelUI() {
+            const today = todayStr();
+            const btn = document.getElementById('wheel-btn');
+            const status = document.getElementById('wheel-status');
+            if (data._wheelUsedDate === today) {
+                btn.disabled = true;
+                btn.innerText = '✅ 已使用';
+                status.innerText = '明天再来';
+            } else {
+                btn.disabled = false;
+                btn.innerText = '🎲 转动转盘';
+                status.innerText = '每日免费1次';
+            }
+        }
+
+        // ---- 周末Boss挑战 ----
+        const WEEKEND_BOSSES = [
+            {
+                name: '🧮 数学巨兽·积分吞噬者',
+                desc: '击败条件：今日完成数学任务即可击败！',
+                reward: 300,
+                condition: () => (data.todayTasks['math'] || 0) > 0,
+                icon: '👾'
+            },
+            {
+                name: '📚 英语单词魔龙',
+                desc: '击败条件：今日完成英语任务即可击败！',
+                reward: 300,
+                condition: () => (data.todayTasks['eng'] || 0) > 0,
+                icon: '🐉'
+            },
+            {
+                name: '📝 语文大魔王',
+                desc: '击败条件：今日完成语文任务即可击败！',
+                reward: 300,
+                condition: () => (data.todayTasks['chn'] || 0) > 0,
+                icon: '😈'
+            },
+            {
+                name: '⚡ 全能挑战王',
+                desc: '击败条件：今日完成3个不同任务即可击败！',
+                reward: 500,
+                condition: () => Object.keys(data.todayTasks).filter(k => data.todayTasks[k] > 0).length >= 3,
+                icon: '👑'
+            },
+            {
+                name: '🏃 运动狂魔',
+                desc: '击败条件：今日完成运动任务即可击败！',
+                reward: 200,
+                condition: () => (data.todayTasks['sport'] || 0) > 0,
+                icon: '💪'
+            },
+        ];
+
+        function isWeekend() {
+            const d = new Date();
+            return d.getDay() === 5 || d.getDay() === 6 || d.getDay() === 0; // 周五六日
+        }
+
+        function generateWeekendBoss() {
+            const today = todayStr();
+            if (data._bossDate === today) return; // 今天已生成
+
+            if (!isWeekend()) {
+                document.getElementById('boss-panel').style.display = 'none';
+                data._bossDate = today;
+                data._bossDefeated = false;
+                data._currentBoss = null;
+                saveData();
+                return;
+            }
+
+            const boss = WEEKEND_BOSSES[Math.floor(Math.random() * WEEKEND_BOSSES.length)];
+            data._bossDate = today;
+            data._bossDefeated = false;
+            data._currentBoss = boss;
+            saveData();
+            marsSpeak(`👾 周末Boss出现！【${boss.name}】降临！${boss.desc} 击败可获得 +${boss.reward} PTS！`);
+        }
+
+        function updateBossUI() {
+            const panel = document.getElementById('boss-panel');
+            const info = document.getElementById('boss-info');
+            const timer = document.getElementById('boss-timer');
+
+            if (!isWeekend() || !data._currentBoss || data._bossDefeated) {
+                if (data._bossDefeated) {
+                    panel.style.display = 'block';
+                    info.innerHTML = '<div style="font-size:2rem;">🏆</div><div style="color:var(--gold);font-weight:900;">Boss已击败！</div><div style="color:var(--text-dim);font-size:0.7rem;">下周继续挑战</div>';
+                } else {
+                    panel.style.display = 'none';
+                }
+                return;
+            }
+
+            panel.style.display = 'block';
+            const boss = data._currentBoss;
+            const isDefeated = boss.condition();
+
+            if (isDefeated && !data._bossDefeated) {
+                data._bossDefeated = true;
+                data.pts += boss.reward;
+                data.totalEarned += boss.reward;
+                addLog(`👾 Boss击败 → +${boss.reward} PTS`, 'crit');
+                marsSpeak(`👾🏆 Boss【${boss.name}】被击败！获得 +${boss.reward} PTS！你是真正的周末战士！`);
+                playSound('crit');
+                showFirework();
+                setTimeout(() => showFirework(), 400);
+                saveData();
+            }
+
+            info.innerHTML = `
+                <div style="font-size:3rem;margin-bottom:6px;">${boss.icon}</div>
+                <div style="color:var(--red);font-weight:900;font-size:0.9rem;">${boss.name}</div>
+                <div style="color:var(--text-dim);font-size:0.75rem;margin:6px 0;">${boss.desc}</div>
+                <div style="color:var(--gold);font-weight:900;">🏆 奖励: +${boss.reward} PTS</div>
+                <div style="margin-top:8px;font-size:0.7rem;color:${isDefeated ? 'var(--green)' : 'var(--red)'};">
+                    ${isDefeated ? '✅ 已击败！' : '⏳ 尚未击败'}
+                </div>
+            `;
+        }
+        const TASKS = [
+            { id: 'eng', name: '英语突击日志', desc: '完成英语线上/线下学习任务', pts: 80, icon: '📚', cat: 'eng', catLabel: '英语', stack: false },
+            { id: 'chn', name: '语文线上突击', desc: '完成语文阅读/写作任务', pts: 80, icon: '📝', cat: 'chn', catLabel: '语文', stack: false },
+            { id: 'math', name: '数学拆弹任务', desc: '完成数学练习/难题攻克', pts: 100, icon: '📐', cat: 'math', catLabel: '数学', stack: false },
+            { id: 'sport', name: '特种体能拉练', desc: '每30分钟运动/户外活动，可叠加', pts: 40, icon: '🥾', cat: 'sport', catLabel: '运动', stack: true, unit: 30 },
+            { id: 'read', name: '战术情报阅读', desc: '阅读30分钟课外书籍', pts: 50, icon: '📖', cat: 'read', catLabel: '阅读', stack: false },
+            { id: 'piano', name: '音波武器训练', desc: '完成练琴/音乐练习', pts: 40, icon: '🎹', cat: 'art', catLabel: '艺术', stack: false },
+            { id: 'housework', name: '后勤支援任务', desc: '家务支援，可多次完成叠加', pts: 30, icon: '🧹', cat: 'house', catLabel: '家务', stack: true },
+            { id: 'coding', name: 'AI学习训练', desc: 'AI学习/编程/逻辑思维30分钟', pts: 60, icon: '🤖', cat: 'coding', catLabel: 'AI', stack: false },
+            { id: 'walk_dog', name: '遛狗加分任务', desc: '完成遛狗任务', pts: 30, icon: '🐕', cat: 'bonus', catLabel: '加分', stack: false },
+        ];
+
+        function renderTasks() {
+            const container = document.getElementById('task-list');
+            container.innerHTML = TASKS.map(t => {
+                const count = data.todayTasks[t.id] || 0;
+                const done = count > 0;
+                const stackText = t.stack && count > 0 ? `×${count}` : '';
+                return `
+                    <div class="task-item ${done ? 'completed' : ''}" id="task-${t.id}"
+                         onclick="doTask('${t.id}')">
+                        <div class="task-check">${done ? '✓' : ''}</div>
+                        <div class="task-info">
+                            <div class="task-name">${t.icon} ${t.name} ${stackText}</div>
+                            <div class="task-desc">${t.desc}</div>
+                        </div>
+                        <span class="task-category ${t.cat}">${t.catLabel}</span>
+                        <span class="task-reward">+${t.pts}</span>
+                    </div>
+                `;
+            }).join('');
+
+            const uniqueDone = Object.keys(data.todayTasks).filter(k => data.todayTasks[k] > 0).length;
+            document.getElementById('task-summary').innerText = `${uniqueDone}/${TASKS.length} 已完成 · 可叠加`;
+            document.getElementById('today-done-display').innerText = `${uniqueDone}/${TASKS.length}`;
+        }
+
+        function doTask(id) {
+            resetDailyIfNeeded();
+            const task = TASKS.find(t => t.id === id);
+            if (!task) return;
+
+            const count = (data.todayTasks[id] || 0) + 1;
+            if (!task.stack && count > 1) {
+                marsSpeak('这个任务今天已经完成了，战士。明天继续！');
+                return;
+            }
+
+            // 暴击判定 - 终极技能影响
+            let isCrit = false;
+            let critMultiplier = 2;
+            if (data._schnauzerActive) {
+                isCrit = true;
+                critMultiplier = 3;
+                data._schnauzerActive = false;
+                marsSpeak('🐕💥 雪纳瑞护体发动！三倍暴击！！！');
+            } else {
+                isCrit = Math.random() < 0.15;
+            }
+
+            // 将军号令加成
+            const generalBonus = data._generalOrderActive ? 1.5 : 1;
+            const streakBonus = 1 + (data.streak * 0.05);
+            const comboBonus = getComboBonus();
+            const finalPts = Math.round(task.pts * (isCrit ? critMultiplier : 1) * streakBonus * generalBonus * (1 + comboBonus));
+
+            data.pts += finalPts;
+            data.totalEarned += finalPts;
+            data.todayTasks[id] = count;
+            data.taskHistory[id] = (data.taskHistory[id] || 0) + 1;
+
+            // 奖励铠甲/道具
+            const armorReward = giveArmorPiece();
+
+            // 日志
+            const stackLabel = task.stack && count > 1 ? `×${count}` : '';
+            const label = isCrit ? '💥 暴击！' : '✅';
+            addLog(`${label} ${task.name}${stackLabel} → +${finalPts} PTS`, isCrit ? 'crit' : 'plus');
+            if (armorReward) addLog(`🛡️ 获得铠甲：${armorReward}`, 'plus');
+
+            // Mars 反馈
+            if (isCrit) {
+                const critLabel = critMultiplier === 3 ? '三倍暴击！' : '双倍积分！';
+                marsSpeak(`💥💥💥 ${critLabel}！${task.name} 完美完成！+${finalPts} PTS！${armorReward ? '并获得【' + armorReward + '】！' : ''}`);
+                showCritEffect(critMultiplier);
+                playSound('crit');
+                data.critCount = (data.critCount || 0) + 1;
+            } else {
+                const cheers = [
+                    '漂亮！24K Magic in the air！这才是精英特种兵的效率！',
+                    'Tonight I just want to take you higher! 积分已注入！',
+                    '干得好！检测到脑部高能战术反应，继续冲锋！',
+                    'Stop! Wait a minute! 这种效率，将军都要向你敬礼！',
+                    'Chunky funky glory! 这就是三角洲特种兵！',
+                    "You're too good to me, baby~ 不，是你对自己太狠了！佩服！",
+                ];
+                marsSpeak(cheers[Math.floor(Math.random() * cheers.length)] + ` (+${finalPts} PTS)${armorReward ? ' 获得【' + armorReward + '】' : ''}`);
+                playSound('task');
+            }
+
+            // 涟漪动画
+            const el = document.getElementById('task-' + id);
+            if (el) {
+                const ripple = document.createElement('div');
+                ripple.className = 'task-ripple';
+                ripple.style.width = ripple.style.height = '20px';
+                ripple.style.left = '50%';
+                ripple.style.top = '50%';
+                el.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            }
+
+            saveData();
+            updateCombo();
+            updateBossUI();
+            refreshUI();
+            checkBadges();
+            updateChallengeProgress();
+        }
+
+        function showCritEffect(multiplier = 2) {
+            const overlay = document.getElementById('crit-overlay');
+            const el = document.createElement('div');
+            el.className = 'crit-text';
+            el.innerText = multiplier === 3 ? '🐕💥 三倍暴击！×3' : '💥 暴击！×2';
+            overlay.appendChild(el);
+            setTimeout(() => el.remove(), 1000);
+        }
+
+        // ---- 商店系统 ----
+        const SHOP_ITEMS = [
+            { id: 'feed_turtle', name: '喂乌龟', pts: 150, icon: '🐢', desc: '重装甲乌龟补给' },
+            { id: 'game', name: '三角洲行动', pts: 600, icon: '🎮', desc: '游戏30分钟许可证' },
+            { id: 'movie', name: '看电影', pts: 800, icon: '🎬', desc: '周末影院许可证' },
+            { id: 'blindbox', name: '盲盒', pts: 1200, icon: '🎁', desc: '硬核手工盲盒令' },
+            { id: 'outdoor', name: '户外探险', pts: 500, icon: '🏕️', desc: '户外活动通行证' },
+            { id: 'snack', name: '零食礼包', pts: 350, icon: '🍿', desc: '零食补给包' },
+            { id: 'wildcard', name: '万能券', pts: 2000, icon: '⭐', desc: '万能兑换券（价值50元人民币）' },
+        ];
+
+        function renderShop() {
+            const grid = document.getElementById('shop-grid');
+            grid.innerHTML = SHOP_ITEMS.map(item => {
+                const canBuy = data.pts >= item.pts;
+                return `
+                    <div class="shop-card ${canBuy ? 'affordable' : ''}" ${canBuy ? `onclick="buyItem('${item.id}')"` : ''}>
+                        <div class="shop-icon">${item.icon}</div>
+                        <div class="shop-name">${item.name}</div>
+                        <div class="shop-cost">${item.pts} PTS</div>
+                        <button class="shop-btn" ${!canBuy ? 'disabled' : ''}>${canBuy ? '兑换' : '积分不足'}</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        let totalBuyCount = 0;
+        function buyItem(id) {
+            const item = SHOP_ITEMS.find(i => i.id === id);
+            if (!item) return;
+            if (data.pts < item.pts) {
+                marsSpeak(`🚨 权限拒绝！积分不足（需要 ${item.pts}，当前 ${data.pts}）。继续战斗！`);
+                playSound('error');
+                return;
+            }
+
+            data.pts -= item.pts;
+            addLog(`🎁 兑换 [${item.name}] → -${item.pts} PTS`, 'minus');
+
+            data.records = data.records || [];
+            data.records.unshift({
+                time: new Date().toLocaleString('zh-CN'),
+                item: item.name,
+                cost: item.pts,
+                status: 'pending'
+            });
+
+            totalBuyCount++;
+            marsSpeak(`✅ 兑换成功！凭证：【${item.name}】。请向大后方先知（妈妈）出示兑换记录审批！`);
+            playSound('buy');
+
+            if (totalBuyCount >= 5) unlockBadge('shopper');
+
+            saveData();
+            refreshUI();
+        }
+
+        // ---- 每日签到 ----
+        function dailyCheckin() {
+            const t = todayStr();
+            if (data.lastCheckin === t) {
+                marsSpeak('今天已经签到了，战士。明天继续保持连击！');
+                return;
+            }
+
+            const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+            if (data.lastCheckin === yesterday) {
+                data.streak = (data.streak || 0) + 1;
+            } else if (data.lastCheckin) {
+                data.streak = 1;
+            } else {
+                data.streak = 1;
+            }
+
+            const bonus = 30 + Math.min(data.streak * 5, 50);
+            data.pts += bonus;
+            data.totalEarned += bonus;
+            data.lastCheckin = t;
+            resetDailyIfNeeded();
+
+            document.getElementById('checkin-bonus').innerText = `+${bonus} PTS`;
+            document.getElementById('checkin-streak').innerText =
+                data.streak > 1 ? `🔥 连续签到 ${data.streak} 天！连击加成生效！` : '第一天签到，好的开始！';
+            document.getElementById('checkin-modal').classList.add('show');
+
+            addLog(`📅 签到 → +${bonus} PTS (连击${data.streak}天)`, 'plus');
+            playSound('task');
+            saveData();
+            refreshUI();
+            checkBadges();
+        }
+
+        function closeCheckin() {
+            document.getElementById('checkin-modal').classList.remove('show');
+        }
+
+        // ---- 每日挑战 ----
+        const CHALLENGES = [
+            { text: '完成所有任务', target: TASKS.length, reward: 200 },
+            { text: '完成3个学习任务（英语/语文/数学）', target: 3, reward: 150 },
+            { text: '完成数学+英语+语文', target: 3, reward: 180 },
+            { text: '完成运动+阅读', target: 2, reward: 120 },
+            { text: '累计完成4个任务', target: 4, reward: 160 },
+        ];
+
+        function generateDailyChallenge() {
+            if (data.challengeDate === todayStr()) return;
+            const challenge = CHALLENGES[Math.floor(Math.random() * CHALLENGES.length)];
+            data.dailyChallenge = challenge;
+            data.challengeDate = todayStr();
+            data.challengeCompleted = false;
+            saveData();
+        }
+
+        function updateChallengeProgress() {
+            const card = document.getElementById('challenge-card');
+            if (!data.dailyChallenge || data.challengeCompleted) {
+                card.style.display = 'none';
+                return;
+            }
+
+            card.style.display = 'block';
+            document.getElementById('challenge-text').innerText = data.dailyChallenge.text;
+            document.getElementById('challenge-reward').innerText = `+${data.dailyChallenge.reward} PTS`;
+
+            const doneCount = Object.keys(data.todayTasks).length;
+            const target = data.dailyChallenge.target;
+            const progress = Math.min((doneCount / target) * 100, 100);
+            document.getElementById('challenge-progress-fill').style.width = progress + '%';
+
+            const btn = document.getElementById('challenge-btn');
+            if (doneCount >= target) {
+                btn.style.opacity = '1';
+                btn.disabled = false;
+            } else {
+                btn.style.opacity = '0.6';
+                btn.disabled = true;
+            }
+        }
+
+        function completeChallenge() {
+            if (data.challengeCompleted) {
+                marsSpeak('今天已经完成过挑战了，战士！');
+                return;
+            }
+
+            const doneCount = Object.keys(data.todayTasks).length;
+            if (doneCount < data.dailyChallenge.target) {
+                marsSpeak(`挑战条件未满足！还需完成 ${data.dailyChallenge.target - doneCount} 个任务。`);
+                playSound('error');
+                return;
+            }
+
+            data.challengeCompleted = true;
+            const reward = data.dailyChallenge.reward;
+            data.pts += reward;
+            data.totalEarned += reward;
+            addLog(`🏆 每日挑战完成 → +${reward} PTS`, 'plus');
+            marsSpeak(`🏆 每日挑战完成！额外奖励 +${reward} PTS！你是真正的精英战士！`);
+            playSound('crit');
+            showFirework();
+            saveData();
+            refreshUI();
+        }
+
+        // ---- 成就系统 ----
+        const BADGES = [
+            { id: 'first_task', icon: '🎯', name: '首战告捷', desc: '完成第一个任务' },
+            { id: 'eng_master', icon: '📚', name: '英语突击手', desc: '英语任务×10' },
+            { id: 'math_bomb', icon: '💣', name: '拆弹专家', desc: '数学任务×10' },
+            { id: 'sport_iron', icon: '🥾', name: '铁腿战士', desc: '运动任务×10' },
+            { id: 'streak_3', icon: '🔥', name: '三日连击', desc: '连续签到3天' },
+            { id: 'streak_7', icon: '💥', name: '周常战士', desc: '连续签到7天' },
+            { id: 'pts_1000', icon: '💰', name: '千分俱乐部', desc: '累计获得1000分' },
+            { id: 'pts_5000', icon: '💎', name: '五千大关', desc: '累计获得5000分' },
+            { id: 'pts_10000', icon: '🏅', name: '万分传奇', desc: '累计获得10000分' },
+            { id: 'crit_luck', icon: '🍀', name: '锦鲤附体', desc: '触发暴击×5' },
+            { id: 'shopper', icon: '🛒', name: '精明买家', desc: '兑换5次' },
+            { id: 'bookworm', icon: '📖', name: '情报专家', desc: '阅读任务×10' },
+        ];
+
+        function renderBadges() {
+            const grid = document.getElementById('badges-grid');
+            grid.innerHTML = BADGES.map(b => {
+                const unlocked = data.badges[b.id];
+                return `
+                    <div class="badge-item ${unlocked ? 'unlocked' : ''}" title="${b.desc}">
+                        <span class="b-icon">${b.icon}</span>
+                        <span class="b-name">${b.name}</span>
+                    </div>
+                `;
+            }).join('');
+
+            const unlockedCount = Object.keys(data.badges).filter(k => data.badges[k]).length;
+            document.getElementById('badge-count').innerText = `${unlockedCount}/${BADGES.length}`;
+        }
+
+        function unlockBadge(id) {
+            if (data.badges[id]) return;
+            data.badges[id] = true;
+            const b = BADGES.find(x => x.id === id);
+            if (b) {
+                playSound('badge');
+                showFirework();
+                marsSpeak(`🏅 成就解锁！【${b.name}】—— ${b.desc}。不愧是精英战士！`);
+            }
+            renderBadges();
+            saveData();
+        }
+
+        function checkBadges() {
+            if (data.totalEarned > 0) unlockBadge('first_task');
+            if (data.totalEarned >= 1000) unlockBadge('pts_1000');
+            if (data.totalEarned >= 5000) unlockBadge('pts_5000');
+            if (data.totalEarned >= 10000) unlockBadge('pts_10000');
+            if (data.streak >= 3) unlockBadge('streak_3');
+            if (data.streak >= 7) unlockBadge('streak_7');
+            if ((data.taskHistory['eng'] || 0) >= 10) unlockBadge('eng_master');
+            if ((data.taskHistory['math'] || 0) >= 10) unlockBadge('math_bomb');
+            if ((data.taskHistory['sport'] || 0) >= 10) unlockBadge('sport_iron');
+            if ((data.taskHistory['read'] || 0) >= 10) unlockBadge('bookworm');
+            if ((data.critCount || 0) >= 5) unlockBadge('crit_luck');
+        }
+
+        function showFirework() {
+            const colors = ['#ffd700', '#ff4444', '#00ff41', '#00b4ff', '#b44dff', '#ff8c00'];
+            const cx = Math.random() * 80 + 10;
+            const cy = Math.random() * 40 + 20;
+
+            const container = document.createElement('div');
+            container.className = 'firework';
+            container.style.left = cx + '%';
+            container.style.top = cy + '%';
+
+            for (let i = 0; i < 20; i++) {
+                const p = document.createElement('div');
+                p.className = 'firework-particle';
+                p.style.background = colors[Math.floor(Math.random() * colors.length)];
+                const angle = (Math.PI * 2 * i) / 20;
+                const dist = 40 + Math.random() * 60;
+                p.style.setProperty('--dx', Math.cos(angle) * dist + 'px');
+                p.style.setProperty('--dy', Math.sin(angle) * dist + 'px');
+                container.appendChild(p);
+            }
+
+            document.body.appendChild(container);
+            setTimeout(() => container.remove(), 1100);
+        }
+
+        // ---- 暑期日历（7月+8月双面板） ----
+
+        // 课程数据（基于 Excel 原始安排）
+        // 英语: 7/5-7/9, 7/12-7/16（7/10-11休息，7/5和7/12是周日）
+        // 数学: 7/18-7/31(除周日), 8月数学已移除只留语文
+        // 语文: 7/6-7/11, 8/24-25, 8/28-29
+        function getCourses(dateStr) {
+            const d = new Date(dateStr + 'T00:00:00');
+            const m = d.getMonth() + 1;
+            const day = d.getDate();
+            const wday = d.getDay();
+            const courses = [];
+
+            // 英语课: 7/5-7/16, 但7/10(五)和7/11(六)休息
+            if (m === 7 && day >= 5 && day <= 16 && !(day === 10 || day === 11)) {
+                courses.push({ type: 'eng', name: '英语', time: '10:40-12:10', period: '上午' });
+            }
+
+            // 数学课: 7/18-7/31(除周日) — 8月已只保留语文课
+            if (m === 7 && day >= 18 && day <= 31 && wday !== 0) {
+                courses.push({ type: 'math', name: '数学', time: '13:30-15:30', period: '下午' });
+            }
+
+            // 语文课: 7/6-7/11 + 8/24-25, 8/28-29
+            if ((m === 7 && day >= 6 && day <= 11) ||
+                (m === 8 && (day === 24 || day === 25 || day === 28 || day === 29))) {
+                courses.push({ type: 'chn', name: '语文', time: '15:00-17:00', period: '晚间' });
+            }
+
+            return courses;
+        }
+
+        // 兼容旧函数
+        function getCourse(dateStr) {
+            const courses = getCourses(dateStr);
+            return courses.length > 0 ? courses[0] : null;
+        }
+
+        // 获取某月的所有课程日
+        function getMonthCourses(month) {
+            const daysInMonth = month === 7 ? 31 : 31; // 8月也31天
+            const result = [];
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `2026-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const d = new Date(dateStr + 'T00:00:00');
+                const wday = d.getDay();
+                const weekNames = ['日', '一', '二', '三', '四', '五', '六'];
+                const courses = getCourses(dateStr);
+                if (courses.length > 0) {
+                    result.push({
+                        day,
+                        wday: weekNames[wday],
+                        dateStr,
+                        courses
+                    });
+                }
+            }
+            return result;
+        }
+
+        // ---- 渲染双月日历 ----
+        function renderAllCalendars() {
+            const weekHeaders = ['日', '一', '二', '三', '四', '五', '六'];
+            const today = new Date();
+            const todayStrVal = today.toISOString().slice(0, 10);
+
+            [7, 8].forEach(month => {
+                const grid = document.getElementById('cal-grid-' + month);
+                if (!grid) return;
+                const daysInMonth = 31; // 7月和8月都是31天
+                const firstDay = new Date(2026, month - 1, 1).getDay();
+
+                // 星期头
+                let html = weekHeaders.map((d, i) =>
+                    `<div class="cal-day-header${i === 0 || i === 6 ? ' weekend' : ''}">${d}</div>`
+                ).join('');
+
+                // 填充前面的空白
+                for (let i = 0; i < firstDay; i++) {
+                    html += '<div class="cal-day other-month"></div>';
+                }
+
+                // 渲染每一天
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dateStr = `2026-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    const d = new Date(dateStr + 'T00:00:00');
+                    const wday = d.getDay();
+                    const isToday = dateStr === todayStrVal;
+                    const courses = getCourses(dateStr);
+                    const hasActivity = courses.length > 0;
+                    const hasCheckin = data.lastCheckin === dateStr;
+
+                    let cls = 'cal-day';
+                    if (isToday) cls += ' today';
+                    if (hasActivity) cls += ' has-activity';
+                    if (hasCheckin) cls += ' has-checkin';
+                    if (wday === 0 || wday === 6) cls += ' weekend';
+
+                    // 课程名称和时间的 HTML
+                    let courseHTML = '';
+                    if (courses.length > 0) {
+                        courseHTML = courses.map(c => {
+                            const colorCls = c.type === 'eng' ? 'eng' : c.type === 'math' ? 'math' : 'chn';
+                            return `<div class="course-name ${colorCls}">${c.name}</div>
+                                    <div class="course-time">${c.time}</div>`;
+                        }).join('');
+                    }
+
+                    html += `<div class="${cls}" title="${dateStr}${courses.length ? ' - ' + courses.map(c => c.name).join('+') : ''}">
+                        <span class="cal-day-label">${day}</span>
+                        ${courseHTML}
+                    </div>`;
+                }
+
+                grid.innerHTML = html;
+            });
+        }
+
+        // ---- 渲染课程表面板 ----
+        function renderCourseTable() {
+            const container = document.getElementById('course-table-body');
+            if (!container) return;
+
+            const allCourses = [];
+            [7, 8].forEach(month => {
+                const monthCourses = getMonthCourses(month);
+                monthCourses.forEach(mc => {
+                    allCourses.push({
+                        month,
+                        day: mc.day,
+                        wday: mc.wday,
+                        dateStr: mc.dateStr,
+                        courses: mc.courses
+                    });
+                });
+            });
+
+            if (allCourses.length === 0) {
+                container.innerHTML = '<div style="text-align:center;color:var(--text-dim);padding:20px;">暂无课程安排</div>';
+                return;
+            }
+
+            const monthNames = { 7: '🔥 7月', 8: '⚡ 8月' };
+            let currentMonth = 0;
+            let html = '';
+
+            allCourses.forEach(item => {
+                if (item.month !== currentMonth) {
+                    currentMonth = item.month;
+                    html += `<div style="color:var(--gold);font-weight:900;font-size:0.85rem;padding:8px 0 4px;border-bottom:1px solid var(--border);margin-bottom:4px;">
+                        ${monthNames[item.month]}
+                    </div>`;
+                }
+
+                const courseLabels = item.courses.map(c => {
+                    const colorMap = { eng: 'var(--blue)', math: 'var(--green)', chn: '#ffaa00' };
+                    const iconMap = { eng: '📘', math: '📗', chn: '📙' };
+                    return `<span style="color:${colorMap[c.type]};font-weight:700;">${iconMap[c.type]} ${c.name}</span>
+                            <span style="color:var(--text-dim);font-size:0.7rem;"> ${c.time}</span>`;
+                }).join('<br>');
+
+                const isToday = item.dateStr === todayStr();
+                const bgStyle = isToday ? 'background:rgba(255,215,0,0.08);border-left:3px solid var(--gold);' : '';
+
+                html += `<div style="display:flex;align-items:flex-start;gap:10px;padding:6px 8px;border-radius:6px;font-size:0.78rem;${bgStyle}">
+                    <span style="color:var(--text-dim);white-space:nowrap;min-width:70px;font-weight:600;">${item.month}/${String(item.day).padStart(2,'0')} 周${item.wday}</span>
+                    <span style="flex:1;">${courseLabels}</span>
+                </div>`;
+            });
+
+            container.innerHTML = html;
+
+            // 统计
+            const totalEng = allCourses.filter(a => a.courses.some(c => c.type === 'eng')).length;
+            const totalMath = allCourses.filter(a => a.courses.some(c => c.type === 'math')).length;
+            const totalChn = allCourses.filter(a => a.courses.some(c => c.type === 'chn')).length;
+            const totalDays = allCourses.length;
+
+            const statsEl = document.getElementById('course-stats');
+            if (statsEl) {
+                statsEl.innerHTML = `共 <span style="color:var(--gold);">${totalDays}</span> 天课程 | 📘英语<span style="color:var(--blue);">${totalEng}</span>天 📗数学<span style="color:var(--green);">${totalMath}</span>天 📙语文<span style="color:#ffaa00;">${totalChn}</span>天`;
+            }
+        }
+
+        // ---- 每日重置 ----
+        function resetDailyIfNeeded() {
+            const t = todayStr();
+            if (data.todayDate !== t) {
+                data.todayDate = t;
+                data.todayTasks = {};
+                data.logs = [];
+                data.challengeCompleted = false;
+                data.challengeDate = '';
+                // 重置将军号令（每日技能）
+                data._generalOrderActive = false;
+                // 重置 combo
+                data._comboCount = 0;
+                generateDailyChallenge();
+                generateWeekendBoss();
+                saveData();
+            }
+        }
+
+        // ---- 日志 ----
+        function addLog(text, type) {
+            const time = fmtTime();
+            data.logs.unshift({ time, text, type });
+            if (data.logs.length > 30) data.logs.pop();
+            renderLogs();
+        }
+
+        function renderLogs() {
+            const area = document.getElementById('log-area');
+            area.innerHTML = (data.logs || []).map(l => {
+                let cls = 'log-plus';
+                if (l.type === 'minus') cls = 'log-minus';
+                else if (l.type === 'crit') cls = 'log-crit';
+                return `<div style="font-size:0.7rem;color:#888;margin-bottom:3px;">
+                    [${l.time}] <span style="color:${l.type === 'minus' ? 'var(--red)' : l.type === 'crit' ? 'var(--gold)' : 'var(--green)'}">${l.text}</span>
+                </div>`;
+            }).join('');
+        }
+
+        // ---- 聊天系统 ----
+        const marsResponses = {
+            math: [
+                '发现警报！检测到数学密码锁。先观察"公分母"或"未知数"切入点，告诉我你第一步打算怎么拆？',
+                '数学高爆弹已锁定！记住拆弹口诀：先找已知条件，再画关系图，最后列方程。You got this!',
+            ],
+            greeting: [
+                'Welcome to Delta Force, soldier! 今天准备攻克哪些任务？',
+                'Hey hey! Mars教官在线。Don\'t believe me, just watch your scores go up!',
+                '战士归队！让我看看今天的作战计划。',
+            ],
+            complaint: [
+                '累？Good. 那说明你在成长。Delta Force 从不奖励偷懒的人。',
+                'I know it\'s hard. 但你看看你的积分墙，每一分都是勋章。Keep going!',
+            ],
+            general: [
+                '收到全局汇报。保持战术定力，Don\'t believe me, just watch!',
+                'Roger that, 战士。继续执行任务，积分不会说谎。',
+                '信息已记录。记住：三角洲特种兵的荣耀是一锤一锤打出来的！',
+            ],
+            encouragement: [
+                '暑期是超越自己的最佳时机！每一天的坚持都在为未来铺路！',
+                '你知道吗？所有伟大的战士都经历过孤独的训练。但你不是一个人，Mars教官永远在线！',
+                '今天的努力是明天的资本。Keep pushing, warrior!',
+            ]
+        };
+
+        function marsSpeak(text) {
+            const box = document.getElementById('chat-box');
+            const msg = document.createElement('div');
+            msg.className = 'chat-msg mars';
+            msg.innerHTML = `<span class="sender">[Mars]</span><span class="time">${fmtTime()}</span><div>${text}</div>`;
+            box.appendChild(msg);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function userSpeak(text) {
+            const box = document.getElementById('chat-box');
+            const msg = document.createElement('div');
+            msg.className = 'chat-msg user';
+            msg.innerHTML = `<span class="sender">[战士]</span><span class="time">${fmtTime()}</span><div>${text}</div>`;
+            box.appendChild(msg);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function sendMsg() {
+            const input = document.getElementById('chat-in');
+            const text = input.value.trim();
+            if (!text) return;
+            userSpeak(text);
+            input.value = '';
+
+            setTimeout(() => {
+                let pool;
+                if (/题|数学|怎么[做算]|方程|\+|-|×|÷|=/.test(text)) {
+                    pool = marsResponses.math;
+                } else if (/你好|hi|hello|在吗|嗨/.test(text)) {
+                    pool = marsResponses.greeting;
+                } else if (/累|难|不想|烦|讨厌|太难/.test(text)) {
+                    pool = marsResponses.complaint;
+                } else if (/加油|坚持|努力/.test(text)) {
+                    pool = marsResponses.encouragement;
+                } else {
+                    pool = marsResponses.general;
+                }
+                marsSpeak(pool[Math.floor(Math.random() * pool.length)]);
+            }, 400 + Math.random() * 600);
+        }
+
+        // ---- 兑换记录 ----
+        function showRecords() {
+            const modal = document.getElementById('record-modal');
+            const list = document.getElementById('record-list');
+
+            if (!data.records || data.records.length === 0) {
+                list.innerHTML = '<p style="color:var(--text-dim);text-align:center;padding:20px;">暂无兑换记录</p>';
+            } else {
+                list.innerHTML = data.records.map((r, i) => `
+                    <div class="record-item">
+                        <div>
+                            <strong>${r.item}</strong><br>
+                            <small style="color:var(--text-dim);">${r.time} | ${r.cost} PTS</small>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span class="record-status ${r.status}">${r.status === 'pending' ? '⏳ 待审批' : '✅ 已批准'}</span>
+                            ${r.status === 'pending' ? `<button class="btn btn-gold btn-sm" onclick="approveRecord(${i})" style="padding:4px 10px;font-size:0.7rem;">批准</button>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            modal.classList.add('show');
+        }
+
+        function approveRecord(idx) {
+            if (data.records[idx]) {
+                data.records[idx].status = 'approved';
+                saveData();
+                showRecords();
+                marsSpeak(`✅ 兑换记录已批准：【${data.records[idx].item}】，尽情享受吧！`);
+            }
+        }
+
+        function closeRecords() {
+            document.getElementById('record-modal').classList.remove('show');
+        }
+
+        // ---- 全部重置 ----
+        function showResetModal() {
+            document.getElementById('reset-modal').classList.add('show');
+            document.getElementById('reset-password').value = '';
+        }
+        function closeResetModal() {
+            document.getElementById('reset-modal').classList.remove('show');
+        }
+        function confirmReset() {
+            const input = document.getElementById('reset-password').value;
+            if (input !== '123123') {
+                marsSpeak('🚨 密码错误！重置被拒绝。');
+                playSound('error');
+                return;
+            }
+            localStorage.removeItem(STORE_KEY);
+            location.reload();
+        }
+
+        // 点击弹窗外部关闭
+        document.addEventListener('click', function (e) {
+            if (e.target.classList.contains('modal-overlay')) {
+                e.target.classList.remove('show');
+            }
+        });
+
+        // ---- 暑期天数计算 ----
+        function updateSummerDay() {
+            if (data.summerStart) {
+                const start = new Date(data.summerStart);
+                const now = new Date();
+                const diff = Math.floor((now - start) / (1000 * 60 * 60 * 24)) + 1;
+                document.getElementById('summer-day').innerText = diff > 0 ? diff : 1;
+            }
+        }
+
+        // ---- 全局刷新 ----
+        function refreshUI() {
+            document.getElementById('pts-display').innerText = data.pts;
+            document.getElementById('total-display').innerText = data.totalEarned;
+            document.getElementById('streak-display').innerText = data.streak + ' 天';
+            updateRankUI();
+            renderTasks();
+            renderShop();
+            renderBadges();
+            renderLogs();
+            updateChallengeProgress();
+            updateSummerDay();
+            renderArmor();
+            renderAllCalendars();
+            renderCourseTable();
+            renderUltimateSkills();
+            updateWheelUI();
+            updateBossUI();
+
+            // 签到按钮状态
+            const checkinBtn = document.getElementById('checkin-btn');
+            if (data.lastCheckin === todayStr()) {
+                checkinBtn.disabled = true;
+                checkinBtn.innerHTML = '✅ 已签到';
+            } else {
+                checkinBtn.disabled = false;
+                checkinBtn.innerHTML = '📅 签到';
+            }
+        }
+
+        // ---- 初始化 ----
+        function init() {
+            data = loadData();
+            createStars();
+            renderAllCalendars();
+            renderCourseTable();
+            renderArmor();
+            resetDailyIfNeeded();
+            generateDailyChallenge();
+            generateWeekendBoss();
+            refreshUI();
+            checkBadges();
+
+            // 恢复音乐状态
+            if (data.musicOn) {
+                startMusic();
+                document.getElementById('music-btn').innerHTML = '🎶';
+            }
+
+            marsSpeak(`欢迎回来，战士！当前军衔：${getRank(data.totalEarned).name}，累计积分 ${data.totalEarned}。暑期特训第 ${Math.floor((new Date() - new Date(data.summerStart || '2026-07-01')) / 86400000) + 1} 天！`);
+            if (data.lastCheckin !== todayStr()) {
+                marsSpeak('⚠️ 今日尚未签到！点击上方签到按钮领取每日积分。');
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
